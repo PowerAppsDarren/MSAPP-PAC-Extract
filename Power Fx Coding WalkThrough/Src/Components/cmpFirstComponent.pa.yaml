@@ -1,0 +1,38 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+ComponentDefinitions:
+  cmpFirstComponent:
+    DefinitionType: CanvasComponent
+    CustomProperties:
+      FieldName:
+        PropertyKind: Input
+        DisplayName: Field Name
+        Description: A custom property
+        DataType: Text
+        Default: ="Default Field Name (please put something else in here)"
+    Properties:
+      Fill: =RGBA(166, 215, 153, 1)
+      Height: =170
+    Children:
+      - TextInputCanvas4:
+          Control: TextInput@0.0.54
+          Properties:
+            Height: =84
+            Width: =610
+            X: =16
+            Y: =62
+      - TextCanvas31:
+          Control: Text@0.0.51
+          Properties:
+            Height: =40
+            Text: =cmpFirstComponent.FieldName
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =610
+            X: =16
+            Y: =22

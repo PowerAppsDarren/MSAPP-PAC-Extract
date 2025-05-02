@@ -1,0 +1,125 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen24:
+    Properties:
+      Fill: =RGBA(180, 214, 250, 1)
+    Children:
+      - galEmployeeListing_6:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =Parent.Height - Self.Y * 2
+            Items: =fxExp_Projects
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_6.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.IsSelected,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =Parent.Width - Self.X * 2
+            X: =40
+            Y: =40
+          Children:
+            - Label1_10:
+                Control: Label@2.5.1
+                Properties:
+                  Color: |-
+                    =If(
+                        DateDiff(
+                            Today(), 
+                            DateAdd(
+                                ThisItem.StartDate, 
+                                ThisItem.DurationDays, 
+                                TimeUnit.Days
+                            )
+                        ) < 0, Color.Red, Color.Black
+                    )
+                  Height: =Parent.TemplateHeight
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.Title
+                  Width: =378
+                  X: =17
+            - DatePickerCanvas1:
+                Control: DatePicker@0.0.44
+                Properties:
+                  SelectedDate: =ThisItem.StartDate
+                  Width: =220
+                  X: =317
+                  Y: =11
+            - Label1_11:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Height: =Parent.TemplateHeight
+                  OnSelect: =Select(Parent)
+                  Text: |-
+                    ="End Date: " & DateAdd(ThisItem.StartDate, ThisItem.DurationDays)
+                  Width: =220
+                  X: =547
+            - Label1_12:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Height: =Parent.TemplateHeight
+                  OnSelect: =Select(Parent)
+                  Text: |-
+                    ="Due in..." & 
+                    DateDiff(
+                        Today(), 
+                        DateAdd(
+                            ThisItem.StartDate, 
+                            ThisItem.DurationDays, 
+                            TimeUnit.Days
+                        )
+                    ) & " days"
+                  Width: =180
+                  X: =790
+            - Icon5:
+                Control: Icon@0.0.7
+                Properties:
+                  Icon: ="Warning"
+                  Visible: |-
+                    =Weekday(
+                        DateAdd(
+                            ThisItem.StartDate, 
+                            ThisItem.DurationDays, 
+                            TimeUnit.Days
+                        )
+                    ) in [1, 7]
+                  X: =995
+                  Y: =9

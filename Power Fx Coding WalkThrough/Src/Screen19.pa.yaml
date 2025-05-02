@@ -1,0 +1,154 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen19:
+    Children:
+      - galEmployeeListing:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =554
+            Items: |-
+              =Sort(
+                  Filter(
+                      EmployeeInfo,
+                      Role = drpRoles.Selected.Value Or togShowAll.Checked
+                  ),
+                  LastName
+              )
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing.Selected});
+
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )
+            TemplateFill: |-
+              =If(
+                  ThisItem.ID = locSelectedRecord.ID,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =499
+            X: =18
+            Y: =188
+          Children:
+            - Label1:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: |-
+                    =ThisItem.LastName & ", " & ThisItem.FirstName & " - " & ThisItem.Role & " - " &  
+                    Round(ThisItem.Salary / 1000, 0) & "K"
+                  Width: =491
+                  Y: =4
+      - drpRoles:
+          Control: DropDown@0.0.45
+          Properties:
+            Items: =fxExp_RolesTable
+            X: =288
+            Y: =30
+          Children:
+            - Value2:
+                Control: DropDownDataField@1.5.0
+                Variant: textualColumn
+                IsLocked: true
+                Properties:
+                  FieldDisplayName: ="Value"
+                  FieldName: ="Value"
+                  FieldType: ="s"
+                  Order: =1
+      - togShowAll:
+          Control: Toggle@1.1.5
+          Properties:
+            Checked: =true
+            Label: ="Show All"
+            Width: =140
+            X: =43
+            Y: =27
+      - TextCanvas8:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Height: =52
+            Text: =locSelectedRecord.ID
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =167
+            X: =1156
+            Y: =30
+      - galEmployeeListingAgain:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =554
+            Items: |-
+              =Sort(
+                  Filter(
+                      EmployeeInfo,
+                      Role = locSelectedRecord.Role
+                      And 
+                      Salary > locSelectedRecord.Salary
+                  ), 
+                  Salary, 
+                  SortOrder.Descending
+              )
+            OnSelect: |
+              =//UpdateContext({locSelectedRecord: galEmployeeListingAgain.Selected});
+            TemplateFill: |-
+              =If(
+                  ThisItem.ID = locSelectedRecord.ID,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =499
+            X: =620
+            Y: =188
+          Children:
+            - Label1_1:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: |-
+                    =ThisItem.LastName & ", " & ThisItem.FirstName & " - " & ThisItem.Role & " - " &  
+                    Round(ThisItem.Salary / 1000, 0) & "K"
+                  Width: =489
+                  Y: =4
+      - TextCanvas10:
+          Control: Text@0.0.51
+          Properties:
+            Height: =75
+            Text: ="Whenever the user selects a record, use Lookup to find another record that has the same role that makes more money than the selected person and display this through a Notify. If there is no one else who doesn't fit this criteria, display the text 'this is the highest paid ___(role)__'. "
+            Width: =1116
+            X: =18
+            Y: =97

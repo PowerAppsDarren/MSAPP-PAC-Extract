@@ -1,0 +1,36 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen4:
+    Children:
+      - ButtonCanvas3:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |-
+              =Set(gblFirstName, "Darren");
+              Set(gblfirstName, "Darrell");
+            X: =190
+            Y: =108
+      - ButtonCanvas4:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |-
+              =If( 
+                  togIsManager.Value = true, 
+                  // this
+                  Notify("You're a manager");, 
+                  Notify("You're not a manager");
+              )
+            X: =366
+            Y: =326
+      - togIsManager:
+          Control: Classic/Toggle@2.1.0
+          Properties:
+            X: =580
+            Y: =358

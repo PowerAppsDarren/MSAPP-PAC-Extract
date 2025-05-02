@@ -1,0 +1,471 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen10:
+    Properties:
+      OnVisible: =Set(gblQuestionIndex, 1);
+    Children:
+      - HtmlText1:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            Height: =484
+            HtmlText: |-
+              ="<ul>
+                  <li>Create a new collection with more difficult questions. Do this with Collect, ClearCollect, but also with a ForAll Loop. Create at least 10 items.</li>
+                  <li>Create a button that patches all these values to a SharePoint list or some other data source.</li>
+                  <li>Update collection items using ForAll() and patch them into the data source.</li> 
+                  <li>Use a timer to randomly show answers to the users in a teasing way (almost too fast for them to remember or read off)</li>
+              </ul>"
+            Size: =17
+            Width: =488
+            X: =875
+            Y: =284
+      - ButtonCanvas9:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =ClearCollect(
+                  colDadJokes,
+                  {
+                      myJokeID: 1,
+                      Title: "Why don't skeletons fight each other?",
+                      Answer: "They don't have the guts."
+                  },
+                  {
+                      myJokeID: 2,
+                      Title: "What do you call cheese that isn't yours?",
+                      Answer: "Nacho cheese."
+                  },
+                  {
+                      myJokeID: 3,
+                      Title: "Why couldn’t the bicycle stand up by itself?",
+                      Answer: "It was two-tired."
+                  },
+                  {
+                      myJokeID: 4,
+                      Title: "What did the grape do when he got stepped on?",
+                      Answer: "Nothing, he just let out a little wine."
+                  },
+                  {
+                      myJokeID: 5,
+                      Title: "I'm reading a book on anti-gravity.",
+                      Answer: "It's impossible to put down!"
+                  },
+                  {
+                      myJokeID: 6,
+                      Title: "Did you hear about the restaurant on the moon?",
+                      Answer: "Great food, no atmosphere."
+                  },
+                  {
+                      myJokeID: 7,
+                      Title: "What do you call a fake noodle?",
+                      Answer: "An Impasta."
+                  },
+                  {
+                      myJokeID: 8,
+                      Title: "Why did the scarecrow win an award?",
+                      Answer: "Because he was outstanding in his field."
+                  },
+                  {
+                      myJokeID: 9,
+                      Title: "Why did the coffee file a police report?",
+                      Answer: "It got mugged."
+                  },
+                  {
+                      myJokeID: 10,
+                      Title: "What do you call an elephant that doesn’t matter?",
+                      Answer: "An irrelephant."
+                  },
+                  {
+                      myJokeID: 11,
+                      Title: "How does a penguin build its house?",
+                      Answer: "Igloos it together."
+                  },
+                  {
+                      myJokeID: 12,
+                      Title: "Why can’t you hear a pterodactyl go to the bathroom?",
+                      Answer: "Because the 'P' is silent."
+                  },
+                  {
+                      myJokeID: 13,
+                      Title: "Why did the tomato turn red?",
+                      Answer: "Because it saw the salad dressing!"
+                  },
+                  {
+                      myJokeID: 14,
+                      Title: "Why don't eggs tell jokes?",
+                      Answer: "They'd crack each other up."
+                  },
+                  {
+                      myJokeID: 15,
+                      Title: "How do you make a tissue dance?",
+                      Answer: "Put a little boogie in it!"
+                  },
+                  {
+                      myJokeID: 16,
+                      Title: "What’s brown and sticky?",
+                      Answer: "A stick."
+                  },
+                  {
+                      myJokeID: 17,
+                      Title: "Why did the math book look sad?",
+                      Answer: "Because it had too many problems."
+                  },
+                  {
+                      myJokeID: 18,
+                      Title: "What do you call a belt made out of watches?",
+                      Answer: "A waist of time."
+                  },
+                  {
+                      myJokeID: 19,
+                      Title: "Why did the golfer bring two pairs of pants?",
+                      Answer: "In case he got a hole in one."
+                  },
+                  {
+                      myJokeID: 20,
+                      Title: "Why can't your nose be 12 inches long?",
+                      Answer: "Because then it would be a foot."
+                  },
+                  {
+                      myJokeID: 21,
+                      Title: "Why did the cookie go to the hospital?",
+                      Answer: "Because he felt crummy."
+                  },
+                  {
+                      myJokeID: 22,
+                      Title: "Why do bees have sticky hair?",
+                      Answer: "Because they use honeycombs."
+                  },
+                  {
+                      myJokeID: 23,
+                      Title: "What do you call a snowman with a six-pack?",
+                      Answer: "An abdominal snowman."
+                  },
+                  {
+                      myJokeID: 24,
+                      Title: "How do cows stay up to date?",
+                      Answer: "They read the moos-paper."
+                  },
+                  {
+                      myJokeID: 25,
+                      Title: "Why did the chicken go to the séance?",
+                      Answer: "To talk to the other side."
+                  },
+                  {
+                      myJokeID: 26,
+                      Title: "How does a vampire start a letter?",
+                      Answer: "Tomb it may concern..."
+                  },
+                  {
+                      myJokeID: 27,
+                      Title: "Why don’t scientists trust atoms?",
+                      Answer: "Because they make up everything!"
+                  },
+                  {
+                      myJokeID: 28,
+                      Title: "What do you call a pile of cats?",
+                      Answer: "A meowtain."
+                  },
+                  {
+                      myJokeID: 29,
+                      Title: "Why was the broom late?",
+                      Answer: "It swept in."
+                  },
+                  {
+                      myJokeID: 30,
+                      Title: "Why did the man run around his bed?",
+                      Answer: "Because he was trying to catch up on his sleep!"
+                  },
+                  {
+                      myJokeID: 31,
+                      Title: "How do you organize a space party?",
+                      Answer: "You planet."
+                  },
+                  {
+                      myJokeID: 32,
+                      Title: "Why don’t some couples go to the gym?",
+                      Answer: "Because some relationships don’t work out."
+                  },
+                  {
+                      myJokeID: 33,
+                      Title: "What do you call a lazy kangaroo?",
+                      Answer: "A pouch potato."
+                  },
+                  {
+                      myJokeID: 34,
+                      Title: "What kind of music do mummies listen to?",
+                      Answer: "Wrap music."
+                  },
+                  {
+                      myJokeID: 35,
+                      Title: "Why did the banana go to the doctor?",
+                      Answer: "Because it wasn’t peeling well."
+                  },
+                  {
+                      myJokeID: 36,
+                      Title: "How do you catch a squirrel?",
+                      Answer: "Climb a tree and act like a nut!"
+                  },
+                  {
+                      myJokeID: 37,
+                      Title: "Why don’t oysters donate to charity?",
+                      Answer: "Because they are shellfish."
+                  },
+                  {
+                      myJokeID: 38,
+                      Title: "Why are elevator jokes so classic and good?",
+                      Answer: "They work on many levels."
+                  },
+                  {
+                      myJokeID: 39,
+                      Title: "What do you call a fish with no eyes?",
+                      Answer: "Fsh."
+                  },
+                  {
+                      myJokeID: 40,
+                      Title: "Why don’t crabs give to charity?",
+                      Answer: "Because they’re shellfish."
+                  },
+                  {
+                      myJokeID: 41,
+                      Title: "What’s orange and sounds like a parrot?",
+                      Answer: "A carrot."
+                  },
+                  {
+                      myJokeID: 42,
+                      Title: "Why did the can crusher quit his job?",
+                      Answer: "Because it was soda pressing."
+                  },
+                  {
+                      myJokeID: 43,
+                      Title: "What’s a skeleton’s least favorite room in the house?",
+                      Answer: "The living room."
+                  },
+                  {
+                      myJokeID: 44,
+                      Title: "What kind of tree fits in your hand?",
+                      Answer: "A palm tree!"
+                  },
+                  {
+                      myJokeID: 45,
+                      Title: "What did one wall say to the other?",
+                      Answer: "I’ll meet you at the corner."
+                  },
+                  {
+                      myJokeID: 46,
+                      Title: "Why was the stadium so cool?",
+                      Answer: "It was filled with fans."
+                  },
+                  {
+                      myJokeID: 47,
+                      Title: "What’s a vampire’s favorite fruit?",
+                      Answer: "A blood orange."
+                  },
+                  {
+                      myJokeID: 48,
+                      Title: "What kind of shoes do ninjas wear?",
+                      Answer: "Sneakers."
+                  },
+                  {
+                      myJokeID: 49,
+                      Title: "Why did the golfer bring extra socks?",
+                      Answer: "In case he got a hole in one."
+                  },
+                  {
+                      myJokeID: 50,
+                      Title: "What did the janitor say when he jumped out of the closet?",
+                      Answer: "Supplies!"
+                  }
+              )
+            Text: ="Create first 50"
+            Width: =237
+            X: =1092
+            Y: =26
+      - txtJokeImport:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: |-
+              ="What do you call a dog that can do magic? | A labracadabrador.
+              Why did the orange stop halfway up the hill? | It ran out of juice.
+              How do you find Will Smith in the snow? | You look for fresh prints.
+              What does a lemon say when it answers the phone? | Yellow!
+              How does a train eat? | It goes chew chew.
+              Why was the calendar so popular? | Because it had a lot of dates.
+              Why did the mushroom get invited to the party? | Because he was a fungi.
+              Why did the man get hit by a bike every day? | He was stuck in a vicious cycle.
+              Why can't a nose be twelve inches long? | Because then it would be a foot.
+              Why did the computer go to therapy? | It had too many tabs open.
+              What did the zero say to the eight? | Nice belt!
+              Why do chickens sit on eggs? | Because they don't have chairs.
+              Why did the cow win an award? | Because he was outstanding in his field.
+              How do you make holy water? | You boil the hell out of it.
+              What do you call a bear with no teeth? | A gummy bear.
+              How do you make an octopus laugh? | With ten-tickles.
+              Why did the barber win the race? | Because he knew all the shortcuts.
+              Why did the frog take the bus to work? | His car got toad.
+              Why are ghosts bad at lying? | Because they are too transparent.
+              Why did the gym close down? | It just didn’t work out.
+              What do you call a fish wearing a bowtie? | Sofishticated.
+              Why don’t cows have any money? | Because the farmers milk them dry.
+              Why did the squirrel bring a ladder? | To get to the high nuts.
+              Why did the stadium get hot after the game? | All the fans left.
+              Why did the music teacher go to jail? | Because she got caught with too many notes.
+              How do you make a lemon drop? | Just let it fall.
+              Why are cats bad storytellers? | Because they only have one tail.
+              What did the ocean say to the beach? | Nothing, it just waved.
+              How do you tell if a vampire is sick? | By how much he’s coffin.
+              Why did the dog sit in the shade? | Because he didn’t want to be a hot dog.
+              How do you fix a cracked pumpkin? | With a pumpkin patch.
+              Why did the baker stop making donuts? | He got tired of the hole thing.
+              What’s a robot’s favorite snack? | Computer chips.
+              What did the big flower say to the little flower? | Hey, bud!
+              Why did the chicken sit in the middle of the road? | He wanted to lay it on the line.
+              What’s the best way to watch a fly fishing tournament? | Live stream.
+              Why did the skeleton stay home from the dance? | He had no body to go with.
+              How do you stop a bull from charging? | Cancel its credit card.
+              What do you get from a pampered cow? | Spoiled milk.
+              Why did the scarecrow become a successful neurosurgeon? | He was outstanding in his field… and had a lot of patients.
+              Why did the smartphone need glasses? | It lost its contacts.
+              What do you call a sleeping bull? | A bulldozer.
+              What did the bee say to the flower? | Hey, bud, when do you open?
+              How do you keep a bagel from getting away? | Put lox on it.
+              Why did the banana get promoted? | Because it had appeal.
+              Why did the snowman look through the bag of carrots? | He was picking his nose.
+              What do you call a can opener that doesn’t work? | A can’t opener.
+              Why don’t melons get married? | Because they cantaloupe.
+              How do you count cows? | With a cowculator.
+              What do you get when you cross a vampire and a snowman? | Frostbite.
+              "
+            Height: =300
+            Mode: =TextMode.MultiLine
+            Width: =677
+            X: =54
+            Y: =46
+      - ButtonCanvas9_1:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =ForAll(
+                  //
+                  // Split will take text and split it into a single column collection
+                  //
+                  Split(
+                      Trim(txtJokeImport.Text), // 50 lines of text
+                      Char(10)
+                  ) As My, 
+                  Patch(
+                      colDadJokes, 
+                      Defaults(colDadJokes), 
+                      {
+                          Title: Trim(First(Split(My.Value, "|")).Value),  
+                          Answer: Trim(Last(Split(My.Value, "|")).Value)
+                      }
+                  )
+              )
+
+
+              //ClearCollect(    colDadJokes, )
+            Text: ="Import Additional Jokes"
+            Width: =237
+            X: =1092
+            Y: =92
+      - Gallery1_1:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =768
+            Items: |-
+              =ForAll(
+                  Sequence(CountRows(colDadJokes)) As My, 
+                  {
+                      Title: Index(colDadJokes, My.Value).Title,
+                      Answer: Index(colDadJokes, My.Value).Answer, 
+                      OrdinalPosition: My.Value
+                  }
+              )
+            TemplateFill: |-
+              =If( 
+                  Mod(ThisItem.OrdinalPosition, 2) = 0, 
+                  Color.White, 
+                  Color.WhiteSmoke 
+              )
+            TemplateSize: =60
+            Width: =845
+            WrapCount: =3
+          Children:
+            - TextCanvas6_1:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =30
+                  Text: =ThisItem.Title
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =Parent.TemplateWidth
+            - TextCanvas6_2:
+                Control: Text@0.0.51
+                Properties:
+                  Fill: =Color.LightYellow
+                  Height: =30
+                  Text: =ThisItem.Answer
+                  VerticalAlign: =VerticalAlign.Middle
+                  Visible: =ThisItem.IsSelected
+                  Width: =Parent.TemplateWidth
+                  Y: =30
+      - ButtonCanvas9_2:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =UpdateContext({locStartTime: Now()});
+              Patch(
+                  DadJoke, 
+                  DropColumns(
+                      colDadJokes,  
+                      myJokeID
+                  )
+              );
+              UpdateContext({locEndTime: Now()});
+              Notify(DateDiff(locStartTime, locEndTime, TimeUnit.Seconds));
+
+              /*
+              ForAll(
+                  colDadJokes
+                  Patch(
+                      DadJoke, 
+                      Defaults(DadJoke), 
+                      {
+                          Title: Trim(First(Split(My.Value, "|")).Value),  
+                          Answer: Trim(Last(Split(My.Value, "|")).Value)
+                      }
+                  )*/
+
+
+              //ClearCollect(    colDadJokes, )
+            Text: ="Patch to SharePoint"
+            Width: =237
+            X: =1092
+            Y: =160
+      - Timer1:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Duration: =10000
+            OnTimerEnd: |-
+              =Notify(
+                  Index(
+                      DadJoke, 
+                      RandBetween(1, CountRows(DadJoke))
+                  ).Title
+              )
+            Repeat: =true
+            X: =1169
+            Y: =244

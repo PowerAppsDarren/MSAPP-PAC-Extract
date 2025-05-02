@@ -1,0 +1,238 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen20:
+    Properties:
+      OnVisible: =Clear(colIncludedEmployees);
+    Children:
+      - galEmployeeListing_1:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =558
+            Items: |-
+              =SortByColumns(
+                  Filter( 
+                      EmployeeInfo, 
+                      Not(ID in colIncludedEmployees.ID)
+                  ),
+                  "field_3", 
+                  SortOrder.Ascending,
+                  "field_2", 
+                  SortOrder.Descending
+              )
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_1.Selected});
+
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )
+            TemplateFill: |-
+              =If(
+                  ThisItem.ID = locSelectedRecord.ID,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =303
+            X: =18
+            Y: =184
+          Children:
+            - Label1_2:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.LastName & ", " & ThisItem.FirstName // & " - " & ThisItem.IsActive
+                  Width: =Parent.TemplateWidth
+                  Y: =4
+            - Icon1:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Height: =50
+                  Icon: =Icon.NextArrow
+                  OnSelect: |-
+                    =If( 
+                        Not(ThisItem.ID in colIncludedEmployees.ID),
+                        Collect(
+                            colIncludedEmployees, 
+                            ThisItem
+                        )
+                    )
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  X: =229
+            - Icon2:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Height: =50
+                  Icon: =If(ThisItem.IsActive,  Icon.ThumbsUp, Icon.ThumbsDown)
+                  OnSelect: |-
+                    =Select(Parent);
+                    Patch(
+                        EmployeeInfo, 
+                        LookUp(EmployeeInfo, ID = ThisItem.ID), 
+                        {
+                            IsActive: Not(ThisItem.IsActive)
+                        }
+                    );
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  X: =178
+      - galEmployeeListing_2:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =558
+            Items: =Sort(colIncludedEmployees, Name)
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_2.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.ID = locSelectedRecord.ID,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =303
+            X: =622
+            Y: =184
+          Children:
+            - Label1_3:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: '=ThisItem.LastName & ", " & ThisItem.FirstName '
+                  Width: =Parent.TemplateWidth
+                  Y: =4
+            - Icon3:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Color: =Color.Maroon
+                  Height: =50
+                  Icon: =Icon.Trash
+                  OnSelect: =Select(Parent);Remove(colIncludedEmployees, ThisItem)
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  Visible: =ThisItem.IsSelected
+                  X: =229
+      - ButtonCanvas15:
+          Control: Button@0.0.45
+          Properties:
+            Text: ="Add >"
+            X: =405
+            Y: =315
+      - ButtonCanvas15_1:
+          Control: Button@0.0.45
+          Properties:
+            Text: ="< Remove"
+            X: =405
+            Y: =379
+      - ButtonCanvas16:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: =Clear(colIncludedEmployees);
+            Text: ="Reset"
+            X: =829
+            Y: =130
+      - ButtonCanvas17:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |+
+              =
+              ForAll(
+                  galEmployeeListing_1.AllItems, 
+                  Update(
+                      EmployeeInfo, 
+                      LookUp(EmployeeInfo, ID = ThisRecord.ID), 
+                      {
+
+                      }
+                  )
+
+                  /*
+                  Patch(
+                      EmployeeInfo, 
+                      LookUp(EmployeeInfo, ID = ThisRecord.ID), 
+                      {
+                          Title: "No way"
+                      }
+                  )*/
+              );
+            X: =236
+            Y: =134
+      - TextCanvas11:
+          Control: Text@0.0.51
+          Properties:
+            Height: =54
+            Text: =CountRows(galEmployeeListing_1.AllItems)
+            Width: =134
+            X: =102
+            Y: =130
+      - TextCanvas11_1:
+          Control: Text@0.0.51
+          Properties:
+            Height: =54
+            Text: =galEmployeeListing_1.AllItemsCount
+            Width: =134
+            X: =102
+            Y: =63

@@ -1,0 +1,102 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+ComponentDefinitions:
+  cmpUserCard:
+    DefinitionType: CanvasComponent
+    CustomProperties:
+      ColorPrimary:
+        PropertyKind: Input
+        DisplayName: Color Primary
+        Description: Perhaps be the App.Theme.Colors.Primary
+        DataType: Color
+        Default: =App.Theme.Colors.Primary
+      ControlPadding:
+        PropertyKind: Input
+        DisplayName: Control Padding
+        Description: A custom property
+        DataType: Number
+        Default: =20
+      ProfilePhoto:
+        PropertyKind: Input
+        DisplayName: Profile Photo
+        Description: A custom property
+        DataType: Image
+        Default: =User().Image
+      UserEmail:
+        PropertyKind: Input
+        DisplayName: User Email
+        Description: A custom property
+        DataType: Text
+        Default: =User().Email
+      UserName:
+        PropertyKind: Input
+        DisplayName: User Name
+        Description: A custom property
+        DataType: Text
+        Default: =First(Split(User().Email, "@")).Value
+      UserRole:
+        PropertyKind: Input
+        DisplayName: User Role
+        Description: A custom property
+        DataType: Text
+        Default: =Office365Users.MyProfileV2().jobTitle
+    Properties:
+      Height: =130
+      Width: =600
+    Children:
+      - imgProfilePhoto:
+          Control: Image@2.2.3
+          Properties:
+            BorderColor: =cmpUserCard.ColorPrimary
+            BorderThickness: =4
+            Height: =90
+            Image: =cmpUserCard.ProfilePhoto
+            RadiusBottomLeft: =Self.RadiusTopLeft
+            RadiusBottomRight: =Self.RadiusTopLeft
+            RadiusTopLeft: =Self.Height / 2
+            RadiusTopRight: =Self.RadiusTopLeft
+            Width: =Self.Height
+            X: =cmpUserCard.ControlPadding
+            Y: =cmpUserCard.ControlPadding
+      - lblUserName:
+          Control: Text@0.0.51
+          Properties:
+            FontColor: =cmpUserCard.ColorPrimary
+            Height: =30
+            Size: =18
+            Text: |-
+              ="User Name: " & cmpUserCard.UserName
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =Parent.Width - Self.X - cmpUserCard.ControlPadding
+            X: '=imgProfilePhoto.X * 2 + imgProfilePhoto.Width '
+            Y: =cmpUserCard.ControlPadding
+      - lblEmail:
+          Control: Text@0.0.51
+          Properties:
+            FontColor: =cmpUserCard.ColorPrimary
+            Height: =30
+            Size: =18
+            Text: |-
+              ="Email: " & cmpUserCard.UserEmail
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =Parent.Width - Self.X - cmpUserCard.ControlPadding
+            X: '=imgProfilePhoto.X * 2 + imgProfilePhoto.Width '
+            Y: =50
+      - lblUserRole:
+          Control: Text@0.0.51
+          Properties:
+            FontColor: =cmpUserCard.ColorPrimary
+            Height: =30
+            Size: =18
+            Text: |-
+              ="Role: " & cmpUserCard.UserRole
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =Parent.Width - Self.X - cmpUserCard.ControlPadding
+            X: '=imgProfilePhoto.X * 2 + imgProfilePhoto.Width '
+            Y: =80

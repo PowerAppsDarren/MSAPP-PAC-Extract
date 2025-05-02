@@ -1,0 +1,88 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen31:
+    Children:
+      - txtMatchme:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: =User().Email
+            Height: =65
+            Width: =481
+            X: =138
+            Y: =153
+      - drpRegExpressions:
+          Control: DropDown@0.0.45
+          Properties:
+            Height: =49
+            Items: =fxRegExStrings
+            Width: =481
+            X: =138
+            Y: =65
+          Children:
+            - Name2:
+                Control: DropDownDataField@1.5.0
+                Variant: textualColumn
+                IsLocked: true
+                Properties:
+                  FieldDisplayName: ="Name"
+                  FieldName: ="Name"
+                  FieldType: ="s"
+                  Order: =1
+      - TextCanvas17:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Height: =65
+            Size: =24
+            Text: |-
+              =IsMatch(
+                  txtMatchme.Text, 
+                  "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$", 
+                  MatchOptions.IgnoreCase
+              )
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =416
+            X: =714
+            Y: =153
+      - txtExpression:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: =drpRegExpressions.Selected.Expression
+            Height: =49
+            Width: =481
+            X: =693
+            Y: =65
+      - txtMatchme_1:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: =User().Email
+            Height: =65
+            Width: =481
+            X: =138
+            Y: =252
+      - TextCanvas17_1:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Height: =65
+            Size: =24
+            Text: |-
+              =IsMatch(
+                  txtMatchme_1.Text, 
+                  "^?([0−9]3)?([0−9]3)?[-. ]?([0-9]{{3}})[-. ]?([0-9]{{4}})$", 
+                  MatchOptions.IgnoreCase
+              )
+              // "
+              // {
+              // }
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =416
+            X: =714
+            Y: =252

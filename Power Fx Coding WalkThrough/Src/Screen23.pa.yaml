@@ -1,0 +1,134 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen23:
+    Properties:
+      Fill: =App.Theme.Colors.Darker40
+    Children:
+      - Container3:
+          Control: GroupContainer@1.3.0
+          Variant: AutoLayout
+          Properties:
+            Height: =768
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutJustifyContent: =LayoutJustifyContent.End
+            Width: =1366
+          Children:
+            - Label2:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =fxExp_PAPink
+                  Fill: =App.Theme.Colors.Darker20
+                  FillPortions: =1
+                  Overflow: =Overflow.Scroll
+                  PaddingBottom: =10
+                  PaddingLeft: =10
+                  PaddingRight: =10
+                  PaddingTop: =10
+                  Size: =24
+                  Text: =locDisplay
+                  VerticalAlign: =VerticalAlign.Bottom
+            - Container4:
+                Control: GroupContainer@1.3.0
+                Variant: AutoLayout
+                Properties:
+                  FillPortions: =0
+                  Height: =50
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =10
+                  PaddingBottom: =10
+                  PaddingLeft: =10
+                  PaddingRight: =10
+                  PaddingTop: =10
+                Children:
+                  - txtParam1:
+                      Control: TextInput@0.0.54
+                      Properties:
+                        Align: =Align.Left
+                        FillPortions: =1
+                        LayoutMinWidth: =100
+                        OnChange: =
+                        Width: =Parent.Width - ButtonCanvas18.Width - 30
+                  - txtParam2:
+                      Control: TextInput@0.0.54
+                      Properties:
+                        Align: =Align.Left
+                        FillPortions: =1
+                        LayoutMinWidth: =100
+                        OnChange: =
+                        Width: =Parent.Width - ButtonCanvas18.Width - 30
+                  - txtParam3:
+                      Control: TextInput@0.0.54
+                      Properties:
+                        Align: =Align.Left
+                        FillPortions: =1
+                        LayoutMinWidth: =100
+                        OnChange: =
+                        Width: =Parent.Width - ButtonCanvas18.Width - 30
+                  - txtParam4:
+                      Control: TextInput@0.0.54
+                      Properties:
+                        Align: =Align.Left
+                        FillPortions: =1
+                        LayoutMinWidth: =100
+                        OnChange: =
+                        Width: =Parent.Width - ButtonCanvas18.Width - 30
+                  - ButtonCanvas18:
+                      Control: Button@0.0.45
+                      Properties:
+                        OnSelect: "=UpdateContext(\n    {\n        locDisplay: \n            Concatenate(\n                locDisplay,\n            \n\n                UTCNow(Now())\n\n                /*\n                WeekNum(Now(), StartOfWeek.Sunday)\n                Weekday(Now(), StartOfWeek.MondayZero)\n                Year(Now())\n                    Month\n                    Day\n                    Hour\n                    Second\n                EDate(Today(), 1)\n                EOMonth(Today(), 1)\n                DateDiff(\n                    txtParam1.Value,\n                    DateAdd(\n                        txtParam1.Value, \n                        - Value(txtParam2.Value), \n                        TimeUnit.Days\n                    ),\n                    TimeUnit.Days\n                )\n                DateAdd(\n                    txtParam1.Value, \n                    - Value(txtParam2.Value), \n                    TimeUnit.Days\n                )   \n                IsToday(\n                    DateTimeValue(\n                        txtParam1.Value & \" \" \n                        & txtParam2.Value & \":\" \n                        & txtParam3.Value & txtParam4.Value\n                    )   \n                )\n                DateTimeValue(txtParam1.Value & \" \" & txtParam2.Value & \":\" & txtParam3.Value & txtParam4.Value) \n\n                (txtParam1.Value & \" \" & txtParam2.Value & \"\" & txtParam3.Value & txtParam4.Value)         \n                */          \n\n                //TimeValue(txtParam1.Value)\n                //DateValue(txtParam1.Value)\n                //Date(txtParam1.Value, txtParam2.Value, txtParam3.Value)\n                //Today()\n                //Now()\n                // ================================================\n                // UTCNow()         // not available yet, probably next release wave\n                // UTCToday()       // not available yet, probably next release wave\n                ,\n                Char(10)\n            )\n    }\n);\n"
+                        Text: ="Execute"
+                        Width: =200
+                  - ButtonCanvas18_1:
+                      Control: Button@0.0.45
+                      Properties:
+                        OnSelect: |
+                          =UpdateContext(
+                              {
+                                  locDisplay: ""
+                              }
+                          );
+                        Text: ="Clear"
+                        Width: =200
+                  - ButtonCanvas18_2:
+                      Control: Button@0.0.45
+                      Properties:
+                        OnSelect: |+
+                          =UpdateContext(
+                              {
+                                  locStartTime: Now()
+                              }
+                          );
+                          //Refresh(EmployeeInfo);
+                          UpdateIf(
+                              EmployeeInfo, 
+                              ID < 50, 
+                              {
+                                  Notes: "Here are the notes for " & Title
+                              }
+                          );
+                          UpdateContext(
+                              {
+                                  locEndTime: Now()
+                              }
+                          );
+                          UpdateContext(
+                              {
+                                  locDisplay: 
+                                      Concatenate(
+                                          locDisplay,
+                                          DateDiff(locStartTime, locEndTime, TimeUnit.Milliseconds),
+                                          Char(10)
+                                      )
+                              }
+                          );
+
+                        Text: ="How Long"
+                        Width: =200

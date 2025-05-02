@@ -1,0 +1,183 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen18:
+    Children:
+      - numJokeID_2:
+          Control: NumberInput@2.9.12
+          Properties:
+            FontSize: =24
+            Height: =53
+            OnChange: |-
+              =UpdateContext(
+                  {
+                      locJoke: 
+                          //LookUp(DadJoke,ID = numJokeID.Value,Title)
+                          fxFun_DadsFindJoke(numJokeID_2.Value)
+                  }
+              );
+            Value: =5
+            Width: =110
+            X: =64
+            Y: =351
+      - Gallery1_6:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =342
+            Items: |-
+              =Sort(
+                  Search(            
+                      Filter(
+                          Filter(
+                              EmployeeInfo, 
+                              ID > 0
+                          ),
+                          Location = drpCities.Selected.Value Or chkShowAll.Checked
+                      )  , 
+                      txtSearch.Value, 
+                      Name, 
+                      FirstName,
+                      LastName, 
+                      Phone
+                  ),
+                  Name
+              )
+            TemplateFill: =Color.White
+            TemplateSize: =50
+            Width: =624
+            X: =675
+            Y: =404
+          Children:
+            - TextCanvas1_3:
+                Control: Text@0.0.51
+                Properties:
+                  Text: =ThisItem.Name
+                  Width: =386
+                  X: =4
+                  Y: =14
+      - TextInputCanvas1_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Height: =133
+            Mode: ='TextInputCanvas.Mode'.Multiline
+            Value: |-
+              =//
+              // Lookup is used to
+              //
+              //      Find a single record or a value from 
+              //      a field in that single record
+              //
+              //      If there are multiple records that meet
+              //      your criteria, it will just return the 1st one 
+              //      it comes across
+              //
+              // 2 parameters: returns a record
+              // 3 parameters: returns a single value
+              //
+              // Is there a difference between the third parameter versus two parameters with ").field" at the end?
+              //      Yes!
+              //
+              With(
+                  {
+                      myJokeRecord: 
+                          LookUp(
+                              DadJoke, 
+                              ID = numJokeID_2.Value
+                          )
+                  }, 
+                  With(
+                      {
+                          // cntrl + shift + L
+                          JokeID: myJokeRecord.ID
+                      },
+                      $"{JokeID}: {myJokeRecord.Title}{Char(10)}{Char(10)}{myJokeRecord.Answer}"
+                  )    
+              )
+            Width: =495
+            X: =64
+            Y: =435
+      - txtAutoID:
+          Control: TextInput@0.0.54
+          Properties:
+            Height: =30
+            Value: ="3"
+            Width: =175
+            X: =675
+            Y: =185
+      - drpCities:
+          Control: DropDown@0.0.45
+          Properties:
+            Items: |-
+              =Sort(
+                  Distinct(
+                      EmployeeInfo,
+                      Location
+                  ),
+                  Value
+              )
+            X: =716
+            Y: =136
+          Children:
+            - Value1:
+                Control: DropDownDataField@1.5.0
+                Variant: textualColumn
+                IsLocked: true
+                Properties:
+                  FieldDisplayName: ="Value"
+                  FieldName: ="Value"
+                  FieldType: ="s"
+                  Order: =1
+      - chkShowAll:
+          Control: CheckBox@0.0.29
+          Properties:
+            Height: =43
+            Label: ="Show All Locations"
+            Width: =268
+            X: =897
+            Y: =179
+      - txtSearch:
+          Control: TextInput@0.0.54
+          Properties:
+            TriggerOutput: ='TextInputCanvas.TriggerOutput'.Keypress
+            Width: =354
+            X: =945
+            Y: =351
+      - Gallery1_7:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =342
+            Items: |-
+              =Sort(        
+                  Filter(
+                      EmployeeInfo, 
+                      //Location = drpCities.Selected.Value Or chkShowAll.Checked And 
+                      StartsWith(Phone, txtSearch.Value)
+                      Or 
+                      StartsWith(Title, txtSearch.Value)
+                  ) 
+                  ,
+                  Name
+              )
+            TemplateFill: =Color.White
+            TemplateSize: =50
+            Width: =624
+            X: =675
+            Y: =404
+          Children:
+            - TextCanvas1_4:
+                Control: Text@0.0.51
+                Properties:
+                  Text: =ThisItem.Name & " - " & ThisItem.Role
+                  Width: =386
+                  X: =4
+                  Y: =14

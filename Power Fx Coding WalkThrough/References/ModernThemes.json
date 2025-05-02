@@ -1,0 +1,81 @@
+{
+  "Themes": [
+    {
+      "EntityName": "PowerAppsTheme",
+      "ThemeName": "PowerAppsTheme"
+    },
+    {
+      "EntityName": "PlatinumTheme",
+      "ThemeName": "PlatinumTheme"
+    },
+    {
+      "EntityName": "TeamsTheme",
+      "ThemeName": "TeamsTheme"
+    },
+    {
+      "EntityName": "GreenTheme",
+      "ThemeName": "GreenTheme"
+    },
+    {
+      "EntityName": "My Teal",
+      "ThemeName": "My Teal",
+      "BasePaletteColor": "#237476",
+      "HueTorsion": 0,
+      "Vibrancy": 0,
+      "ThemePrimaryColorLocked": true,
+      "ColorOverrides": [
+        "",
+        "",
+        "",
+        "#bf00ff",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "Font": "Open Sans"
+    },
+    {
+      "EntityName": "Real Power Apps",
+      "ThemeName": "Real Power Apps",
+      "BasePaletteColor": "#742774",
+      "HueTorsion": 0,
+      "Vibrancy": 0,
+      "ThemePrimaryColorLocked": true,
+      "Font": "Segoe UI"
+    },
+    {
+      "EntityName": "SharePointTheme",
+      "ThemeName": "SharePointTheme"
+    },
+    {
+      "EntityName": "SteelTheme",
+      "ThemeName": "SteelTheme"
+    },
+    {
+      "EntityName": "OrangeTheme",
+      "ThemeName": "OrangeTheme"
+    },
+    {
+      "EntityName": "RedTheme",
+      "ThemeName": "RedTheme"
+    },
+    {
+      "EntityName": "DarrensTheme",
+      "ThemeName": "DarrensTheme",
+      "BasePaletteColor": "#2b6fa6",
+      "HueTorsion": 0,
+      "Vibrancy": 0,
+      "ThemePrimaryColorLocked": true,
+      "Font": "Open Sans"
+    }
+  ]
+}

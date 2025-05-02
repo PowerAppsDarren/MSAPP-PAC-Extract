@@ -1,0 +1,81 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen30:
+    Children:
+      - galAsciiCodes:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =Parent.Height
+            Items: |-
+              =ForAll(
+                  //
+                  // 33 is !
+                  // 126 is ~
+                  // These two numbers mark the beginning and end of the 
+                  // characters we're interested in!
+                  //
+                  // If you want more, add in the unicode chars: https://en.wikipedia.org/wiki/List_of_Unicode_characters
+                  //
+                  // ASCII Reference: https://en.wikipedia.org/wiki/ASCII
+                  //
+                  Sequence(126 - 33, 33, 1),
+                  {
+                      AsciiCode:  Value,
+                      Value:      Char(Value)
+                  }
+              )
+            TemplateFill: |-
+              =If(
+                  Mod(
+                      ThisItem.AsciiCode,
+                      2
+                  ) = 1,
+                  Color.White,
+                  Color.Black
+              )
+            TemplateSize: =Self.Width / 9
+            Transition: =Transition.Push
+            Width: =Parent.Width
+            WrapCount: =9
+          Children:
+            - lblShowAsciiValue:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: |-
+                    =If(
+                        Mod(
+                            ThisItem.AsciiCode,
+                            2
+                        ) = 1,    
+                        Color.Black,
+                        Color.White
+                    )
+                  Height: =Parent.TemplateHeight
+                  Size: =48
+                  Text: =ThisItem.Value
+                  Width: =Parent.TemplateWidth
+            - Label13:
+                Control: Label@2.5.1
+                Properties:
+                  Color: |-
+                    =If(
+                        Mod(
+                            ThisItem.AsciiCode,
+                            2
+                        ) = 1,    
+                        Color.Black,
+                        Color.White
+                    )
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.AsciiCode
+                  Width: =146.22222222222223
