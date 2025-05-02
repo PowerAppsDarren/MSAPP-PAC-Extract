@@ -8,6 +8,8 @@ Some shared knowledge and resources (also released under the liberal MIT open so
 
 Credit goes to BulbDigital introducting the use of PowerShell scripts to unpack and unpack MSAPP files. Here is their template file they have made available: 
 - https://www.bulb.digital/resources/powerapps-theme-template 
+- https://github.com/BulbDigital 
+- https://youtu.be/aRzVPkHkUPg
 
 >All Bulb Digital downloadable resources are provided under the MIT License
 
