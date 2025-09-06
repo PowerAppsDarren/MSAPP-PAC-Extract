@@ -1,0 +1,89 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen17:
+    Children:
+      - numJokeID_1:
+          Control: NumberInput@2.9.12
+          Properties:
+            FontSize: =24
+            Height: =53
+            OnChange: |-
+              =UpdateContext(
+                  {
+                      locJoke: 
+                          //LookUp(DadJoke,ID = numJokeID.Value,Title)
+                          fxFun_DadsFindJoke(numJokeID_1.Value)
+                  }
+              );
+            Value: =5
+            Width: =110
+            X: =64
+            Y: =351
+      - TextInputCanvas1:
+          Control: TextInput@0.0.54
+          Properties:
+            Height: =133
+            Mode: ='TextInputCanvas.Mode'.Multiline
+            Value: |-
+              =//
+              // Lookup is used to
+              //
+              //      Find a single record or a value from 
+              //      a field in that single record
+              //
+              //      If there are multiple records that meet
+              //      your criteria, it will just return the 1st one 
+              //      it comes across
+              //
+              // 2 parameters: returns a record
+              // 3 parameters: returns a single value
+              //
+              // Is there a difference between the third parameter versus two parameters with ").field" at the end?
+              //      Yes!
+              //
+              With(
+                  {
+                      myJokeRecord: 
+                          LookUp(
+                              DadJoke, 
+                              ID = numJokeID_1.Value
+                          )
+                  }, 
+                  With(
+                      {
+                          // cntrl + shift + L
+                          JokeID: myJokeRecord.ID
+                      },
+                      $"{JokeID}: {myJokeRecord.Title}{Char(10)}{Char(10)}{myJokeRecord.Answer}"
+                  )    
+              )
+            Width: =495
+            X: =64
+            Y: =435
+      - Gallery1_5:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =342
+            Items: =DadJoke
+            TemplateFill: =Color.White
+            TemplateSize: =50
+            Width: =437
+            X: =766
+            Y: =351
+          Children:
+            - TextCanvas1_2:
+                Control: Text@0.0.51
+                Properties:
+                  Text: =ThisItem.Title
+                  Width: =386
+                  X: =4
+                  Y: =14

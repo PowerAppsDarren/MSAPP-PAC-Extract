@@ -1,0 +1,90 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen12:
+    Children:
+      - ButtonCanvas11:
+          Control: Button@0.0.45
+          Properties:
+            X: =1221
+            Y: =705
+      - sldWidth:
+          Control: Slider@1.0.32
+          Properties:
+            Height: =100
+            Max: =800
+            Min: =100
+            Value: =200
+            Width: =696
+            X: =100
+      - sldHeight:
+          Control: Slider@1.0.32
+          Properties:
+            Height: =387
+            Layout: ='Slider.Layout'.Vertical
+            Max: =800
+            Min: =100
+            Value: =200
+            Width: =100
+            Y: =100
+      - Container1:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Semibold
+            Height: =sldHeight.Value
+            Width: =sldWidth.Value
+            X: =100
+            Y: =100
+          Children:
+            - TextCanvas7:
+                Control: Text@0.0.51
+                Properties:
+                  Align: ='TextCanvas.Align'.Center
+                  Height: =Parent.Height
+                  Size: =36
+                  Text: |-
+                    =//
+                    // Why With?
+                    //      
+                    //      1. Makes code easier to read
+                    //      2. Avoids repeating long expressions
+                    //      3. Improves performance by evaluating an expression only once
+                    //          - example: LookUp(DB, ID = locID, Title)
+                    //      4. Keeps the global and local scope clean
+                    //          - Less use of global and local variables
+                    //
+                    With(
+                        {
+                            //
+                            // We create block-scoped variables
+                            //
+                            myValue:        -1,
+
+                            myRecord:       LookUp(DadJoke, ID = 1), 
+
+                            myLastName:     Last(Split(User().FullName, " ")).Value,
+                            myArea:         sldHeight.Value * sldWidth.Value
+                        }, 
+                        //myArea & " square pixels"
+                        With(
+                            {
+                                // variables
+                                myJoke:         myRecord.Title, 
+                                myAnswer:       myRecord.Answer
+                            },
+                            If(
+                                IsBlank(myJoke), 
+                                $"This joke doesn't exist! the joke is on you, Mr/Mrs {myLastName}!", 
+                                myJoke
+                            )
+                        )
+                    )
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =Parent.Width

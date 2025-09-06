@@ -1,0 +1,225 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen28:
+    Properties:
+      Fill: =RGBA(180, 214, 250, 1)
+    Children:
+      - galEmployeeListing_13:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =329
+            Items: =fxExp_Lipsum_Jackson
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_13.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.IsSelected,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =250
+            Width: =589
+            X: =20
+            Y: =20
+          Children:
+            - Label1_19:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =Parent.TemplateHeight
+                  OnSelect: =Select(Parent)
+                  Overflow: =Overflow.Scroll
+                  Size: =18
+                  Text: =ThisItem.Quote
+                  Width: =579
+      - galEmployeeListing_14:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =329
+            Items: =colSentences
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_14.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.IsSelected,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =100
+            Width: =700
+            X: =635
+            Y: =20
+          Children:
+            - Label1_20:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =Parent.TemplateHeight
+                  OnSelect: =Select(Parent)
+                  Overflow: =Overflow.Scroll
+                  Size: =18
+                  Text: =ThisItem.Value
+                  Width: =579
+      - txtCodeEditor_8:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Clear: =true
+            Default: =galEmployeeListing_13.Selected.Quote
+            DisabledBorderColor: =Self.Fill
+            Font: =Font.'Courier New'
+            Height: =377
+            HoverFill: =Self.Fill
+            LineHeight: =1.4
+            Mode: =TextMode.MultiLine
+            PaddingBottom: =10
+            PaddingLeft: =10
+            PaddingRight: =10
+            PaddingTop: =10
+            Size: =18
+            Width: =589
+            X: =20
+            Y: =369
+      - TextCanvas15_9:
+          Control: Text@0.0.51
+          Properties:
+            Fill: =Color.LightYellow
+            Font: =Font.'Courier New'
+            Height: =86
+            Size: =28
+            Text: =Substitute(galEmployeeListing_14.Selected.Value, " ", "   ")
+            Width: =700
+            X: =635
+            Y: =369
+      - TextCanvas15_10:
+          Control: Text@0.0.51
+          Properties:
+            Fill: =Color.LightYellow
+            Font: =Font.'Courier New'
+            Height: =97
+            Size: =28
+            Text: "=Trim(\r\n    With( \r\n        {\r\n            myFirstComma: Find(\",\", TextCanvas15_9.Text)\r\n        }, \r\n        With(\r\n            {\r\n                mySecondComma: Find(\",\", TextCanvas15_9.Text, myFirstComma + 1)\r\n            }, \r\n            Mid(TextCanvas15_9.Text, myFirstComma, mySecondComma - myFirstComma)\r\n        )\r\n    )\r\n)\r\n\r\n\r\n        /*\r\n        Right(\r\n            TextCanvas15_9.Text, \r\n            Len(TextCanvas15_9.Text) - Len(myFirstWord)\r\n        )\r\n        & Char(10)\r\n        & Len(TextCanvas15_9.Text)\r\n        & Char(10)\r\n        & Len(myFirstWord)\r\n        */\r\n        "
+            Width: =700
+            X: =635
+            Y: =463
+      - TextCanvas15_11:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =Color.LightYellow
+            Font: =Font.'Courier New'
+            Height: =86
+            Size: =28
+            Text: =Len(TextCanvas15_10.Text)
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =135
+            X: =1221
+            Y: =682
+      - ButtonCanvas19_3:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |-
+              =ClearCollect(
+                  colSentences, 
+                  Split(
+                      galEmployeeListing_13.Selected.Quote,
+                      ". "
+                  )
+              )
+              //
+              // Split: takes a string and splits it into an array/collection
+              // Concat: takes a collection and creates a string
+              //
+            X: =484
+            Y: =696
+      - TextInputCanvas2_3:
+          Control: TextInput@0.0.54
+          Properties:
+            Value: ="PROD-551245-CAT5"
+            X: =635
+            Y: =639
+      - TextCanvas16:
+          Control: Text@0.0.51
+          Properties:
+            Height: =69
+            Size: =24
+            Text: =Mid(User().Email, 5, 6) & Char(10) & User().Email
+            Width: =575
+            X: =635
+            Y: =560
+      - TextCanvas16_1:
+          Control: Text@0.0.51
+          Properties:
+            Height: =69
+            Size: =24
+            Text: |-
+              =With( 
+                  {
+                      myPrefix: "PROD-", 
+                      mySuffix: "-CAT5"
+                  }, 
+                  Mid(
+                      TextInputCanvas2_3.Value, 
+                      Len(myPrefix), 
+                      Len(TextInputCanvas2_3.Value) - Len(mySuffix) - Len(myPrefix)
+                  )
+              )
+            Width: =575
+            X: =635
+            Y: =671

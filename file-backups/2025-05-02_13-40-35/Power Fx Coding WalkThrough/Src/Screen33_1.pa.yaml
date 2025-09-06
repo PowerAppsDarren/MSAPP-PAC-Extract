@@ -1,0 +1,99 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen33_1:
+    Children:
+      - txtName_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Placeholder: ="Name"
+            TriggerOutput: ='TextInputCanvas.TriggerOutput'.Delayed
+            Width: =350
+            X: =147
+            Y: =150
+      - txtEmail_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Placeholder: ="Email"
+            TriggerOutput: ='TextInputCanvas.TriggerOutput'.Keypress
+            Width: =350
+            X: =147
+            Y: =202
+      - TextCanvas18_3:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Start
+            BorderColor: =ColorFade(Color.WhiteSmoke, -25%)
+            BorderStyle: =BorderStyle.Dashed
+            BorderThickness: =1
+            Fill: =RGBA(250, 250, 250, 1)
+            PaddingLeft: =10
+            Text: |-
+              =IsMatch(
+                  txtEmail_1.Value, 
+                  "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$"
+              )
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =350
+            X: =517
+            Y: =202
+      - txtPhone_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Placeholder: ="Phone"
+            TriggerOutput: ='TextInputCanvas.TriggerOutput'.Keypress
+            Width: =350
+            X: =147
+            Y: =254
+      - TextCanvas18_4:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Start
+            BorderColor: =ColorFade(Color.WhiteSmoke, -25%)
+            BorderStyle: =BorderStyle.Dashed
+            BorderThickness: =1
+            Fill: =RGBA(250, 250, 250, 1)
+            PaddingLeft: =10
+            Text: |+
+              =IsMatch(
+                  txtPhone_1.Value, 
+                  "^\([0-9]{3}\) [0-9]{3}-[0-9]{4}$"
+              )
+              // David's: "(\d{3})(\d{3})(\d{4})"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =350
+            X: =517
+            Y: =254
+      - TextCanvas18_5:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Start
+            BorderColor: =ColorFade(Color.WhiteSmoke, -25%)
+            BorderStyle: =BorderStyle.Dashed
+            BorderThickness: =1
+            Fill: =RGBA(250, 250, 250, 1)
+            PaddingLeft: =10
+            Text: =$"Hello {Proper(txtName_1.Value)}, and welcome!"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =720
+            X: =147
+            Y: =323
+      - ButtonCanvas24_1:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |-
+              =Trace(
+                  "hello!",
+                  TraceSeverity.Critical, 
+                  {
+                      value: "hello"
+                  }
+              )
+            X: =597
+            Y: =429

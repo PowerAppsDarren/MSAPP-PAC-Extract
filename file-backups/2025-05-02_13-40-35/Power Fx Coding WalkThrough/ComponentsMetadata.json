@@ -1,0 +1,39 @@
+{
+  "Components": [
+    {
+      "Name": "cmpFirstComponent",
+      "TemplateName": "6f76c134aef641a8a78b3ed5644ea5f8",
+      "Description": "",
+      "AllowCustomization": true,
+      "AllowAccessToGlobals": false
+    },
+    {
+      "Name": "cmpUserCard",
+      "TemplateName": "9100e33ede704f5883e25b79279a68c3",
+      "Description": "",
+      "AllowCustomization": true,
+      "AllowAccessToGlobals": false
+    },
+    {
+      "Name": "cmpPasswordInput",
+      "TemplateName": "1eb2c522767f44e986af63735356ddcf",
+      "Description": "",
+      "AllowCustomization": true,
+      "AllowAccessToGlobals": false
+    },
+    {
+      "Name": "cmpCode",
+      "TemplateName": "c178311eddb34b019f131dc63e530f6e",
+      "Description": "",
+      "AllowCustomization": true,
+      "AllowAccessToGlobals": false
+    },
+    {
+      "Name": "Component1",
+      "TemplateName": "3c45164b548146e986f73ea64610b260",
+      "Description": "",
+      "AllowCustomization": true,
+      "AllowAccessToGlobals": false
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen11:
+    Properties:
+      OnVisible: =Set(gblQuestionIndex, 1);
+    Children:
+      - txtCodeEditor_2:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Clear: =true
+            Default: |-
+              ="
+              - Get Get All Jokes in DB
+                - Pull data from SP List
+                - Use ClearCollect to init collection
+              - Import Additional Jokes
+                - Loop through all lines of text in the txtJokeImport_1 by CR(13)/LF(10) - use 10
+                - Update (insert, actually) the in-memory collection with new data
+                - Parse out the different values for the fields in the collection
+              - Patch Back to DB
+                - Keep track of when we started
+                - Update the DB in one pass / trip (drop any columns that aren't in DB)
+                - Store when the operation was done
+                - Notify the user with how long it took
+              "
+            DisabledBorderColor: =Self.Fill
+            Fill: =RGBA(253, 207, 180, 1)
+            Font: =Font.'Courier New'
+            Height: =515
+            HoverFill: =Self.Fill
+            LineHeight: =1.4
+            Mode: =TextMode.MultiLine
+            PaddingBottom: =10
+            PaddingLeft: =10
+            PaddingRight: =10
+            PaddingTop: =10
+            Size: =18
+            Width: =853
+            X: =20
+            Y: =232
+      - Gallery1_2:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =768
+            Items: |-
+              =ForAll(
+                  Sequence(CountRows(colDadJokes)) As My, 
+                  {
+                      Title: Index(colDadJokes, My.Value).Title,
+                      Answer: Index(colDadJokes, My.Value).Answer, 
+                      OrdinalPosition: My.Value
+                  }
+              )
+            TemplateFill: |-
+              =If( 
+                  Mod(ThisItem.OrdinalPosition, 2) = 0, 
+                  Color.White, 
+                  Color.WhiteSmoke 
+              )
+            TemplateSize: =60
+            Width: =463
+          Children:
+            - TextCanvas6_3:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =30
+                  Text: =ThisItem.Title
+                  VerticalAlign: =VerticalAlign.Middle
+                  Width: =Parent.TemplateWidth
+            - TextCanvas6_4:
+                Control: Text@0.0.51
+                Properties:
+                  Fill: =Color.LightYellow
+                  Height: =30
+                  Text: =ThisItem.Answer
+                  VerticalAlign: =VerticalAlign.Middle
+                  Visible: =ThisItem.IsSelected
+                  Width: =Parent.TemplateWidth
+                  Y: =30
+      - ButtonCanvas9_3:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =ClearCollect(
+                  colDadJokes,
+                  DadJoke
+              )
+            Text: ="Go Get Jokes"
+            Width: =237
+            X: =1092
+            Y: =26
+      - txtJokeImport_1:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Default: |-
+              =""
+
+              /*
+              "What do you call a dog that can do magic? | A labracadabrador.
+              Why did the orange stop halfway up the hill? | It ran out of juice.
+              How do you find Will Smith in the snow? | You look for fresh prints.
+              What does a lemon say when it answers the phone? | Yellow!
+              How does a train eat? | It goes chew chew.
+              Why was the calendar so popular? | Because it had a lot of dates.
+              Why did the mushroom get invited to the party? | Because he was a fungi.
+              Why did the man get hit by a bike every day? | He was stuck in a vicious cycle.
+              Why can't a nose be twelve inches long? | Because then it would be a foot.
+              Why did the computer go to therapy? | It had too many tabs open.
+              What did the zero say to the eight? | Nice belt!
+              Why do chickens sit on eggs? | Because they don't have chairs.
+              Why did the cow win an award? | Because he was outstanding in his field.
+              How do you make holy water? | You boil the hell out of it.
+              What do you call a bear with no teeth? | A gummy bear.
+              How do you make an octopus laugh? | With ten-tickles.
+              Why did the barber win the race? | Because he knew all the shortcuts.
+              Why did the frog take the bus to work? | His car got toad.
+              Why are ghosts bad at lying? | Because they are too transparent.
+              Why did the gym close down? | It just didn’t work out.
+              What do you call a fish wearing a bowtie? | Sofishticated.
+              Why don’t cows have any money? | Because the farmers milk them dry.
+              Why did the squirrel bring a ladder? | To get to the high nuts.
+              Why did the stadium get hot after the game? | All the fans left.
+              Why did the music teacher go to jail? | Because she got caught with too many notes.
+              How do you make a lemon drop? | Just let it fall.
+              Why are cats bad storytellers? | Because they only have one tail.
+              What did the ocean say to the beach? | Nothing, it just waved.
+              How do you tell if a vampire is sick? | By how much he’s coffin.
+              Why did the dog sit in the shade? | Because he didn’t want to be a hot dog.
+              How do you fix a cracked pumpkin? | With a pumpkin patch.
+              Why did the baker stop making donuts? | He got tired of the hole thing.
+              What’s a robot’s favorite snack? | Computer chips.
+              What did the big flower say to the little flower? | Hey, bud!
+              Why did the chicken sit in the middle of the road? | He wanted to lay it on the line.
+              What’s the best way to watch a fly fishing tournament? | Live stream.
+              Why did the skeleton stay home from the dance? | He had no body to go with.
+              How do you stop a bull from charging? | Cancel its credit card.
+              What do you get from a pampered cow? | Spoiled milk.
+              Why did the scarecrow become a successful neurosurgeon? | He was outstanding in his field… and had a lot of patients.
+              Why did the smartphone need glasses? | It lost its contacts.
+              What do you call a sleeping bull? | A bulldozer.
+              What did the bee say to the flower? | Hey, bud, when do you open?
+              How do you keep a bagel from getting away? | Put lox on it.
+              Why did the banana get promoted? | Because it had appeal.
+              Why did the snowman look through the bag of carrots? | He was picking his nose.
+              What do you call a can opener that doesn’t work? | A can’t opener.
+              Why don’t melons get married? | Because they cantaloupe.
+              How do you count cows? | With a cowculator.
+              What do you get when you cross a vampire and a snowman? | Frostbite.
+              "*/
+            Height: =450
+            Mode: =TextMode.MultiLine
+            Width: =835
+            X: =494
+            Y: =318
+      - ButtonCanvas9_4:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =ForAll(
+                  //
+                  // Split will take text and split it into a single column collection
+                  //
+                  Split(
+                      Trim(txtJokeImport_1.Text), // 50 lines of text
+                      Char(10)
+                  ) As My, 
+                  Patch(
+                      colDadJokes, 
+                      Defaults(colDadJokes), 
+                      {
+                          Title: Trim(First(Split(My.Value, "|")).Value),  
+                          Answer: Trim(Last(Split(My.Value, "|")).Value)
+                      }
+                  )
+              )
+
+
+              //ClearCollect(    colDadJokes, )
+            Text: ="Import Additional Jokes"
+            Width: =237
+            X: =1092
+            Y: =92
+      - ButtonCanvas9_5:
+          Control: Button@0.0.45
+          Properties:
+            Height: =51
+            OnSelect: |-
+              =UpdateContext({locStartTime: Now()});
+              Patch(
+                  DadJoke, 
+                  DropColumns(
+                      colDadJokes,  
+                      JokeID
+                  )
+              );
+              UpdateContext({locEndTime: Now()});
+              Notify(DateDiff(locStartTime, locEndTime, TimeUnit.Seconds));
+
+              /*
+              ForAll(
+                  colDadJokes
+                  Patch(
+                      DadJoke, 
+                      Defaults(DadJoke), 
+                      {
+                          Title: Trim(First(Split(My.Value, "|")).Value),  
+                          Answer: Trim(Last(Split(My.Value, "|")).Value)
+                      }
+                  )*/
+
+
+              //ClearCollect(    colDadJokes, )
+            Text: ="Patch to SharePoint"
+            Width: =237
+            X: =1092
+            Y: =160

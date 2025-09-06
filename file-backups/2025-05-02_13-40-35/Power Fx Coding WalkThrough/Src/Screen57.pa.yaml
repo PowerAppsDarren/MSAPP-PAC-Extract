@@ -1,0 +1,60 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen57:
+    Children:
+      - galFieldTypes:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderColor: =Self.Fill
+            BorderThickness: =2
+            Fill: =RGBA(170, 170, 170, 1)
+            Height: =400
+            TemplateFill: =If(ThisItem.IsSelected, Color.LightYellow, Color.White)
+            TemplatePadding: =3
+            TemplateSize: =40
+            Width: =300
+            Y: =198
+          Children:
+            - lblGalleryItemLabel:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =Parent.TemplateHeight
+                  PaddingLeft: =10
+                  Text: =ThisItem.SampleHeading
+                  Width: =Parent.TemplateWidth
+      - galFieldTypes_1:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderColor: =Self.Fill
+            BorderThickness: =2
+            Fill: =RGBA(170, 170, 170, 1)
+            Height: =400
+            TemplateFill: =If(ThisItem.IsSelected, Color.LightYellow, Color.White)
+            TemplatePadding: =3
+            TemplateSize: =40
+            Width: =300
+            X: =399
+            Y: =183
+          Children:
+            - lblGalleryItemLabel_1:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =Parent.TemplateHeight
+                  PaddingLeft: =10
+                  Text: =ThisItem.SampleHeading
+                  Width: =Parent.TemplateWidth
+      - ButtonCanvas38:
+          Control: Button@0.0.45
+          Properties:
+            Text: ="My Button"
+            X: =1020
+            Y: =447

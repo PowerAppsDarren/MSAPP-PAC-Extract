@@ -1,0 +1,227 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen21:
+    Properties:
+      Fill: =RGBA(180, 214, 250, 1)
+    Children:
+      - btnLoadData:
+          Control: Button@0.0.45
+          Properties:
+            Height: =40
+            OnSelect: |-
+              =ClearCollect(
+                  colEmployeeData, 
+                  EmployeeInfo
+              )
+            Text: ="Create Collection"
+            Width: =140
+            X: =20
+            Y: =20
+      - galEmployeeListing_3:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =545
+            Items: |-
+              =Sort(
+                  colEmployeeData,
+                  Location
+              )
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_3.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.ID = locSelectedRecord.ID,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =1320
+            WrapCount: =2
+            X: =20
+            Y: =197
+          Children:
+            - Label1_4:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.Name
+                  Width: =220
+                  Y: =4
+            - Icon3_1:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Color: =Color.Maroon
+                  Height: =50
+                  Icon: =Icon.Trash
+                  OnSelect: =Select(Parent);Remove(colIncludedEmployees, ThisItem)
+                  PaddingBottom: =8
+                  PaddingLeft: =8
+                  PaddingRight: =8
+                  PaddingTop: =8
+                  Visible: =ThisItem.IsSelected
+                  X: =Parent.TemplateWidth - Self.Width - 10
+            - Label1_5:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.Department
+                  Width: =160
+                  X: =195
+                  Y: =4
+            - Label1_6:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: ="$" & Round(ThisItem.Salary / 1000, 0) & "K"
+                  Width: =80
+                  X: =344
+                  Y: =4
+            - Label1_7:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.Location
+                  Width: =200
+                  X: =444
+                  Y: =4
+      - btnIncreaseSalary:
+          Control: Button@0.0.45
+          Properties:
+            Height: =40
+            OnSelect: |-
+              =ForAll(
+                  Filter(
+                      colEmployeeData, 
+                      Department
+                  ) As My, 
+                  Patch(
+                      colEmployeeData, 
+                      My, 
+                      {
+                          Salary: My.Salary * 1.2
+                      }
+                  )
+              )
+            Text: ="Increase Salary"
+            Width: =166
+            X: =183
+            Y: =20
+      - DropdownCanvas1:
+          Control: DropDown@0.0.45
+          Properties:
+            Height: =40
+            Items: =fxExp_Departments
+            Width: =333
+            X: =376
+            Y: =20
+          Children:
+            - Name1:
+                Control: DropDownDataField@1.5.0
+                Variant: textualColumn
+                IsLocked: true
+                Properties:
+                  FieldDisplayName: ="Name"
+                  FieldName: ="Name"
+                  FieldType: ="s"
+                  Order: =1
+      - btnIncreaseSalary_1:
+          Control: Button@0.0.45
+          Properties:
+            Height: =40
+            OnSelect: |-
+              =ForAll(
+                  Filter(
+                      FirstN(galEmployeeListing_3.AllItems, 100),
+                      Mod(ID, 3) = 0
+                  ) As My, 
+                  Patch(
+                      colEmployeeData,
+                      My, 
+                      {
+                          Department: "Sales"
+                      }
+                  )
+              );
+              Patch(
+                  EmployeeInfo, 
+                  colEmployeeData
+              );
+            Text: ="Makes Salesmen"
+            Width: =166
+            X: =734
+            Y: =20
+      - DropdownCanvas1_1:
+          Control: DropDown@0.0.45
+          Properties:
+            Height: =40
+            Items: =Sort(Distinct(colEmployeeData, Location), Value)
+            Width: =333
+            X: =944
+            Y: =20
+          Children:
+            - Value3:
+                Control: DropDownDataField@1.5.0
+                Variant: textualColumn
+                IsLocked: true
+                Properties:
+                  FieldDisplayName: ="Value"
+                  FieldName: ="Value"
+                  FieldType: ="s"
+                  Order: =1
+      - btnLoadData_1:
+          Control: Button@0.0.45
+          Properties:
+            BasePaletteColor: =RGBA(249, 83, 109, 1)
+            Height: =40
+            OnSelect: |-
+              =RemoveIf(
+                  colEmployeeData, 
+                  StartsWith(Location, "A")
+              )
+            Text: ="Delete A Cities"
+            Width: =166
+            X: =734
+            Y: =88
+      - ButtonCanvas21:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: "=ForAll(\r\n     Filter(\r\n             EmployeeData,\r\n              Department\r\n      ), \r\n\r\n    // do something over and over, at least more than once\r\n)\r\n "
+            X: =201
+            Y: =88

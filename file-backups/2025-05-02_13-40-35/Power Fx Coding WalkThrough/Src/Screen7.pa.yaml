@@ -1,0 +1,87 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen7:
+    Properties:
+      Fill: =RGBA(180, 214, 250, 50%)
+      OnVisible: |-
+        =Set(gblQuestionIndex, 1);
+        Set(gblScore, 0);
+    Children:
+      - TextCanvas2:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =RGBA(180, 214, 250, 1)
+            Height: =64
+            Size: =18
+            Text: =LookUp(fxExp_QandA, ID = gblQuestionIndex, Question)
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =383
+            X: =339
+            Y: =253
+      - txtAnswer:
+          Control: TextInput@0.0.54
+          Properties:
+            Appearance: ='TextInputCanvas.Appearance'.Outline
+            Height: =50
+            Width: =383
+            X: =339
+            Y: =342
+      - ButtonCanvas6:
+          Control: Button@0.0.45
+          Properties:
+            Height: =42
+            OnSelect: |-
+              =If(
+                  Lower(txtAnswer.Value) = 
+                  Lower(
+                      LookUp(
+                          fxExp_QandA, 
+                          ID = gblQuestionIndex, 
+                          Answer
+                      )
+                  ),
+                  //
+                  // They answered correctly!
+                  //
+                  Set(gblScore, gblScore + 1)
+              );
+              If(
+                  //
+                  // If criteria: evaluates to true/false
+                  //
+                  gblQuestionIndex < CountRows(fxExp_QandA),
+                  //
+                  // Then (or true) block 
+                  //
+                  Set(gblQuestionIndex, gblQuestionIndex + 1),
+                  //
+                  // Else (or false) block 
+                  //
+                  Navigate(Screen8, ScreenTransition.Fade)
+              );
+              Reset(txtAnswer);
+            Text: ="Submit Answer"
+            Width: =383
+            X: =339
+            Y: =425
+      - TextCanvas3:
+          Control: Text@0.0.51
+          Properties:
+            Text: |-
+              =    Lower(
+                      LookUp(
+                          fxExp_QandA, 
+                          ID = gblQuestionIndex, 
+                          Answer
+                      )
+                  )
+            X: =764
+            Y: =360

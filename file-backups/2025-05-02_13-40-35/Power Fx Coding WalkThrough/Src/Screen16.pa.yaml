@@ -1,0 +1,138 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen16:
+    Children:
+      - numJokeID:
+          Control: NumberInput@2.9.12
+          Properties:
+            FontSize: =24
+            Height: =53
+            OnChange: |-
+              =UpdateContext(
+                  {
+                      locJoke: 
+                          //LookUp(DadJoke,ID = numJokeID.Value,Title)
+                          fxFun_DadsFindJoke(numJokeID.Value)
+                  }
+              );
+            Value: =5
+            Width: =110
+            X: =106
+            Y: =56
+      - TextCanvas9:
+          Control: Text@0.0.51
+          Properties:
+            BorderColor: =RGBA(40, 134, 222, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =2
+            Height: =143
+            Size: =36
+            Text: |+
+              =//locJoke
+
+              fxFun_DadsFindJoke(numJokeID.Value)
+              //LookUp(DadJoke, ID = numJokeID.Value, Title)
+            Width: =964
+            X: =106
+            Y: =154
+      - ButtonCanvas10:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |-
+              =UpdateContext(
+                  {
+                      locJoke: 
+                          LookUp(DadJoke,ID = numJokeID.Value,Title)
+                          //fxFun_DadsFindJoke(numJokeID.Value)
+                  }
+              );
+              Notify(locJoke)
+            X: =1165
+            Y: =265
+      - Gallery1_4:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =342
+            Items: =fxFun_DadsFindJoke_Table(numJokeID.Value)
+            TemplateFill: =Color.White
+            TemplateSize: =50
+            Width: =437
+            X: =40
+            Y: =370
+          Children:
+            - TextCanvas1_1:
+                Control: Text@0.0.51
+                Properties:
+                  Text: =ThisItem.Title
+                  Width: =386
+                  X: =4
+                  Y: =14
+      - txtCodeEditor_3:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            Clear: =true
+            Default: =locJokeJSON
+            DisabledBorderColor: =Self.Fill
+            Fill: =RGBA(253, 207, 180, 1)
+            Font: =Font.'Courier New'
+            Height: =302
+            HoverFill: =Self.Fill
+            LineHeight: =1.4
+            Mode: =TextMode.MultiLine
+            PaddingBottom: =10
+            PaddingLeft: =10
+            PaddingRight: =10
+            PaddingTop: =10
+            Size: =18
+            Width: =848
+            X: =493
+            Y: =456
+      - ButtonCanvas12:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: "=UpdateContext(\r\n    {\r\n        locJokeJSON: \r\n            JSON(\r\n                DropColumns(\r\n                    fxFun_DadsFindJoke_Table(numJokeID.Value), \r\n                    Attachments\r\n                ), \r\n                JSONFormat.IncludeBinaryData\r\n            )\r\n    }\r\n);\r\n    "
+            X: =1185
+            Y: =370
+      - ButtonCanvas13:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: |+
+              =Set(
+                  gblJoke,
+                  DropColumns( 
+                      Filter(DadJoke, ID = numJokeID.Value),  
+                      Attachments
+                  )
+              );
+              Set(
+                  gblUntyped, 
+                  ParseJSON(
+                      JSON(
+                          gblJoke, 
+                          JSONFormat.IncludeBinaryData
+                      )
+                  )
+              );
+            X: =556
+            Y: =386
+      - ButtonCanvas14:
+          Control: Button@0.0.45
+          Properties:
+            Height: =36
+            OnSelect: |-
+              =Notify(
+                  Text( 
+                      fxFun_GetSPRecord(numJokeID.Value).Title
+                  )
+              )
+            X: =697
+            Y: =402

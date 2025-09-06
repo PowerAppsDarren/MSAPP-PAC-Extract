@@ -1,0 +1,280 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen22:
+    Children:
+      - galEmployeeListing_4:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =558
+            Items: =fxExp_Colors
+            OnSelect: |-
+              =UpdateContext({locSelectedRecord: galEmployeeListing_4.Selected});
+              /*
+              With(  
+                  {
+                      myRichPerson: 
+                          LookUp(
+                              Sort(
+                                  Filter(
+                                      EmployeeInfo,
+                                      Role = locSelectedRecord.Role
+                                      And 
+                                      Salary > locSelectedRecord.Salary            
+                                  ), 
+                                  Salary, 
+                                  SortOrder.Descending
+                              ), 
+                              Salary = Max(Salary)
+                          )
+                  },
+                  If(
+                      IsBlank(myRichPerson.Salary), 
+                      Notify("This is the highest paid " & locSelectedRecord.Role), 
+                      Notify(myRichPerson.Name & " makes more! " &  myRichPerson.Salary)
+                  )
+              )*/
+            TemplateFill: |-
+              =If(
+                  ThisItem.IsSelected,
+                  Color.LightYellow,
+                  Color.White
+              )
+            TemplateSize: =50
+            Width: =478
+            X: =834
+            Y: =170
+          Children:
+            - Label1_8:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =46
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.Name
+                  Width: =378
+                  X: =90
+                  Y: =4
+            - Icon4:
+                Control: Classic/Icon@2.5.0
+                Properties:
+                  Color: =ThisItem.Value
+                  Height: =50
+                  Icon: =Icon.HalfFilledCircle
+                  OnSelect: =Select(Parent)
+                  PaddingBottom: =4
+                  PaddingLeft: =4
+                  PaddingRight: =4
+                  PaddingTop: =4
+                  X: =7
+      - txtColorText:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="#ffff00"
+            Width: =315
+            X: =124
+            Y: =71
+      - txtColorText_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: =JSON(ctrColor.Fill, JSONFormat.Compact)
+            Width: =315
+            X: =124
+            Y: =170
+      - txtHexDec:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="8f"
+            Width: =315
+            X: =124
+            Y: =246
+      - TextCanvas12:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Height: =43
+            Text: |-
+              ="Hex2Dec: " & Hex2Dec(txtHexDec.Value)
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =104
+            X: =472
+            Y: =257
+      - txtHexDec_1:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="128"
+            Width: =315
+            X: =124
+            Y: =331
+      - TextCanvas12_1:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Height: =43
+            Text: =Dec2Hex(txtHexDec_1.Value)
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =104
+            X: =472
+            Y: =342
+      - TextCanvas13:
+          Control: Text@0.0.51
+          Properties:
+            Text: =255 / 2
+            X: =942
+            Y: =22
+      - TextCanvas13_1:
+          Control: Text@0.0.51
+          Properties:
+            Text: =255 / 2
+            X: =616
+            Y: =71
+      - ctrColor:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =ColorValue(txtColorText.Value)
+            Height: =54
+            Width: =211
+            X: =488
+            Y: =71
+      - RR:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="128"
+            Width: =80
+            X: =124
+            Y: =501
+      - GG:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="128"
+            Width: =80
+            X: =224
+            Y: =501
+      - BB:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: ="128"
+            Width: =80
+            X: =337
+            Y: =501
+      - AA:
+          Control: TextInput@0.0.54
+          Properties:
+            Font: =Font.'Courier New'
+            FontSize: =24
+            Height: =54
+            Value: =sldAlpha.Value
+            Width: =132
+            X: =484
+            Y: =501
+      - NumberInput1:
+          Control: NumberInput@2.9.12
+          Properties:
+            X: =104
+            Y: =608
+      - TextCanvas13_2:
+          Control: Text@0.0.51
+          Properties:
+            Text: =255 / 2
+            X: =677
+            Y: =581
+      - ctrColor_1:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =RGBA(RR.Value, GG.Value, BB.Value, AA.Value / 100)
+            Height: =54
+            Width: =211
+            X: =517
+            Y: =570
+      - TextCanvas13_3:
+          Control: Text@0.0.51
+          Properties:
+            Text: =255 / 2
+            X: =677
+            Y: =682
+      - ctrColor_2:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =ColorFade(RGBA(RR.Value, GG.Value, BB.Value, AA.Value / 100), sldFade.Value / 100)
+            Height: =54
+            Width: =211
+            X: =517
+            Y: =671
+      - TextCanvas13_4:
+          Control: Text@0.0.51
+          Properties:
+            Text: =255 / 2
+            X: =362
+            Y: =693
+      - ctrColor_3:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.Regular
+            Fill: =ColorFade(RGBA(RR.Value, GG.Value, BB.Value, 100), sldFade.Value / 100)
+            Height: =54
+            Width: =211
+            X: =247
+            Y: =671
+      - sldAlpha:
+          Control: Slider@1.0.32
+          Properties:
+            X: =477
+            Y: =466
+      - sldFade:
+          Control: Slider@1.0.32
+          Properties:
+            Min: =-100
+            Value: =0
+            X: =390
+            Y: =728
+      - ButtonCanvas22:
+          Control: Button@0.0.45
+          Properties:
+            X: =707
+            Y: =326
+      - Button1:
+          Control: Classic/Button@2.2.0
+          Properties:
+            X: =645
+            Y: =377
+      - ButtonCanvas23:
+          Control: Button@0.0.45
+          Properties:
+            OnSelect: =Assert(false, "cool")
+            X: =40
+            Y: =22

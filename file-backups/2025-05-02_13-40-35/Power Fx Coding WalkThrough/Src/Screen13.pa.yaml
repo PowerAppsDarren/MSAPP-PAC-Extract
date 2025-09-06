@@ -1,0 +1,135 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen13:
+    Properties:
+      OnVisible: =Set(gblQuestionIndex, 1);
+    Children:
+      - ListBox2_1:
+          Control: ListBox@2.2.0
+          Properties:
+            Height: =223
+            Items: |-
+              =ForAll(
+                  Sequence(CountRows(QuestionAndAnswer)), 
+                  {
+                      QuestionText: 
+                          Index(
+                              QuestionAndAnswer, 
+                              ThisRecord.Value
+                          ).Title, 
+                      OrdinalPosition: ThisRecord.Value
+                  }
+              )
+            Items.Value: =QuestionText
+            Width: =580
+            X: =73
+            Y: =39
+      - ButtonCanvas5_2:
+          Control: Button@0.0.45
+          Properties:
+            Height: =44
+            OnSelect: |-
+              =ClearCollect( 
+                  colQandA, 
+                  fxExp_QandA
+              )
+            Width: =189
+            X: =714
+            Y: =39
+      - ButtonCanvas5_3:
+          Control: Button@0.0.45
+          Properties:
+            Height: =44
+            OnSelect: |-
+              =ClearCollect( 
+                  colQandA, 
+                  fxExp_QandA
+              );
+              ForAll(
+                  colQandA As my, 
+                  //
+                  // Looping Code
+                  //
+                  Patch(
+                      QuestionAndAnswer,              // Data Source
+                      Defaults(QuestionAndAnswer),    // Record being updated
+                      {                               // Field & Value pairs
+                          Title: my.Question, 
+                          CorrectAnswer: my.Answer            
+                      }
+                  )
+              );
+            Width: =189
+            X: =714
+            Y: =129
+      - Gallery1_3:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderThickness: =2
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =350
+            Items: |-
+              =ForAll(
+                  Sequence(CountRows(QuestionAndAnswer)) As My, 
+                  With(
+                      {
+                          myRecord: 
+                              Index(                
+                                  QuestionAndAnswer, 
+                                  My.Value
+                              )
+                      },
+                      With(
+                          {
+                              myQuestion: myRecord.Title, 
+                              myAnswer: myRecord.CorrectAnswer
+                          },
+                          {
+                              QuestionText: myQuestion, 
+                              OrdinalPosition: My.Value, 
+                              QuestionAnswer: myAnswer,
+                              QandALength: Len(myQuestion) + Len(myAnswer)
+                          }
+                      )
+                  )
+              )
+            TemplateFill: |-
+              =If( 
+                  Mod(ThisItem.OrdinalPosition, 2) = 0, 
+                  Color.White, 
+                  Color.WhiteSmoke 
+              )
+            TemplateSize: =46
+            Width: =580
+            X: =73
+            Y: =284
+          Children:
+            - TextCanvas6_5:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =46
+                  Text: =ThisItem.QuestionText
+                  Width: =484
+      - tmrMakeTime_1:
+          Control: Timer@2.1.0
+          Properties:
+            Duration: =1000
+            OnTimerEnd: |-
+              =Notify(
+                  "Read quick! Here's the answer to #" & gblQuestionIndex
+                  & ": " & 
+                  Index(fxExp_QandA, gblQuestionIndex).Answer
+              );
+              Set(gblQuestionIndex, gblQuestionIndex + 1);
+            OnTimerStart: =
+            Repeat: =true
+            X: =836
+            Y: =400

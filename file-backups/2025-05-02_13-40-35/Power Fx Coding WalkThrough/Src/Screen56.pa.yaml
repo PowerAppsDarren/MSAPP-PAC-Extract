@@ -1,0 +1,28 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen56:
+    Children:
+      - DataCardValue16_1:
+          Control: Attachments@2.3.0
+          Properties:
+            BorderColor: =Color.Black
+            PaddingBottom: =5
+            PaddingLeft: =If(Self.DisplayMode = DisplayMode.Edit, 5, 0)
+            PaddingRight: =5
+            PaddingTop: =5
+            Width: =467
+            X: =128
+            Y: =236
+      - DataCardValue16_2:
+          Control: Attachments@2.3.0
+          Properties:
+            Width: =578
+            X: =640
+            Y: =236

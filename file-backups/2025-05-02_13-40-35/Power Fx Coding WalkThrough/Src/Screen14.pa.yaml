@@ -1,0 +1,147 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen14:
+    Children:
+      - txtInputPrice:
+          Control: TextInput@0.0.54
+          Properties:
+            AccessibleLabel: =fxExp_DefaultAccessibilityLabel
+            Placeholder: |-
+              ="Original Price: $#.##"
+            X: =878
+            Y: =346
+      - sldDiscount:
+          Control: Slider@1.0.32
+          Properties:
+            Value: =10
+            X: =950
+            Y: =425
+      - sldTax:
+          Control: Slider@1.0.32
+          Properties:
+            Value: =5
+            X: =950
+            Y: =508
+      - lblResult:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =RGBA(180, 214, 250, 1)
+            Height: =77
+            Text: |-
+              =With(
+                  {
+                      myPrice: Value(txtInputPrice.Value), 
+                      myDiscountPercentage: Value(sldDiscount.Value)%,
+                      myTaxPercentage: sldTax.Value%
+                  }, 
+                  With( 
+                      {
+                          myDiscount: myPrice * myDiscountPercentage, 
+                          myTax: myPrice * myTaxPercentage
+                      }, 
+                  //$"{myPrice} - {myDiscount} - {myTax}"
+                  myPrice - myDiscount - myTax
+                  )
+              )
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =335
+            X: =863
+            Y: =597
+      - lblResult_1:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.End
+            Text: ="Discount %"
+            VerticalAlign: =VerticalAlign.Middle
+            X: =841
+            Y: =425
+      - lblResult_2:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.End
+            Text: ="Tax %"
+            VerticalAlign: =VerticalAlign.Middle
+            X: =841
+            Y: =509
+      - lblResult_3:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =RGBA(180, 214, 250, 1)
+            Height: =77
+            Text: |-
+              =With(
+                  {
+                      myGreeting: "Hello,", 
+                      myGreetee: User().FullName
+                  }, 
+                  $"{myGreeting} {myGreetee}!"
+              )
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =335
+            X: =142
+            Y: =581
+      - lblResult_4:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Start
+            Text: =sldDiscount.Value
+            VerticalAlign: =VerticalAlign.Middle
+            X: =1176
+            Y: =427
+      - lblResult_5:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Start
+            Text: =sldTax.Value
+            VerticalAlign: =VerticalAlign.Middle
+            X: =1176
+            Y: =511
+      - lblResult_6:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =RGBA(180, 214, 250, 1)
+            Height: =133
+            Text: |-
+              =// I worked out all the parts in the With() and just added the Tax to the discounted amount i.e. 
+              With(
+                  {
+                      basePrice: Value(txtInputPrice.Value),
+                      discountAmount: Value(txtInputPrice.Value) * sldDiscount.Value / 100,
+                      discountedPrice: Value(txtInputPrice.Value) - (Value(txtInputPrice.Value) * sldDiscount.Value / 100),
+                      taxAmount: (Value(txtInputPrice.Value) - (Value(txtInputPrice.Value) * sldDiscount.Value / 100)) * sldTax.Value / 100
+                  },
+                  Text(
+                      Round(
+                          discountedPrice + taxAmount,
+                          2
+                      ),
+                      "$ ###.##"
+                  )
+              )
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =335
+            X: =477
+            Y: =378
+      - lblResult_7:
+          Control: Text@0.0.51
+          Properties:
+            Align: ='TextCanvas.Align'.Center
+            Fill: =RGBA(180, 214, 250, 1)
+            Height: =77
+            Text: |-
+              =//Text(1234567.23, """[$-en-US]#,###.## ")
+              Text(1234567.23, "$#,##0.00")
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =335
+            X: =477
+            Y: =691

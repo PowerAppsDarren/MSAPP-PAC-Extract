@@ -1,0 +1,43 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen34:
+    Children:
+      - Gallery1_8:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Fill: =RGBA(214, 221, 224, 1)
+            Height: =578
+            Items: |-
+              =Concatenate(
+                  "Setup: ", 
+                  DadJoke.Title, 
+                  "Punchline: ", 
+                  DadJoke.Answer
+              )
+            TemplateFill: =Color.White
+            TemplateSize: =50
+            Width: =1227
+            X: =108
+            Y: =159
+          Children:
+            - TextCanvas1_5:
+                Control: Text@0.0.51
+                Properties:
+                  Height: =50
+                  Text: =ThisItem.Value
+                  Width: =427
+      - Dropdown2:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Items: =DadJoke
+            Items.Value: =Answer
+            X: =75
+            Y: =51

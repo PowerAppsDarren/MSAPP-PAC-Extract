@@ -1,0 +1,76 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+EditorState:
+  ScreensOrder:
+    - Screen0
+    - Screen1
+    - Screen2
+    - Screen3
+    - Screen4
+    - Screen5
+    - Screen6
+    - Screen7
+    - Screen8
+    - Screen9
+    - Screen10
+    - Screen11
+    - Screen12
+    - Screen13
+    - Screen14
+    - Screen15
+    - Screen16
+    - Screen17
+    - Screen18
+    - Screen19
+    - Screen20
+    - Screen21
+    - Screen22
+    - Screen23
+    - Screen24
+    - Screen25
+    - Screen26
+    - Screen27
+    - Screen28
+    - Screen29
+    - Screen30
+    - Screen31
+    - Screen32
+    - Screen33
+    - Screen33_1
+    - Screen34
+    - Screen35
+    - Screen36
+    - Screen37
+    - Screen38
+    - Screen39
+    - Screen40
+    - Screen41
+    - Screen42
+    - Screen43
+    - Screen44
+    - Screen45
+    - Screen46
+    - Screen47
+    - Screen48
+    - Screen49
+    - Screen50
+    - Screen51
+    - Screen52
+    - Screen53
+    - Screen54
+    - Screen55
+    - Screen56
+    - Screen57
+    - Screen58
+  ComponentDefinitionsOrder:
+    - Component1
+    - cmpFirstComponent
+    - cmpUserCard
+    - cmpPasswordInput
+    - cmpCode
