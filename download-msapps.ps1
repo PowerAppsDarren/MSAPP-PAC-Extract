@@ -669,34 +669,8 @@ function Download-AllApps {
         return
     }
     
-    # First, try to get all app IDs if we don't have them
-    $needsIdLookup = $Apps | Where-Object { $_.Id -like "temp_*" -or $_.Id -like "unknown_*" -or $_.Id -like "app_*" }
-    
-    if ($needsIdLookup.Count -gt 0) {
-        Write-ColorOutput Yellow "Fetching actual App IDs..."
-        
-        # Try to get detailed list with JSON output
-        $detailedList = & $pacPath canvas list --environment $script:currentEnvironment --output json 2>&1
-        
-        if ($LASTEXITCODE -eq 0) {
-            try {
-                $appsJson = $detailedList | ConvertFrom-Json
-                
-                # Update app IDs where possible
-                foreach ($app in $Apps) {
-                    if ($app.Id -like "temp_*" -or $app.Id -like "unknown_*" -or $app.Id -like "app_*") {
-                        $matchingApp = $appsJson | Where-Object { $_.DisplayName -eq $app.Name -or $_.Name -eq $app.Name }
-                        if ($matchingApp) {
-                            $app.Id = $matchingApp.Name  # The 'Name' field in JSON is actually the ID
-                            Write-ColorOutput Green "Found ID for $($app.Name): $($app.Id)"
-                        }
-                    }
-                }
-            } catch {
-                Write-ColorOutput Yellow "Could not parse JSON output. Will try to download by name..."
-            }
-        }
-    }
+    Write-Host ""
+    Write-ColorOutput Cyan "Starting batch download..."
     
     $successCount = 0
     $failCount = 0
