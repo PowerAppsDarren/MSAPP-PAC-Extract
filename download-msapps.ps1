@@ -8,9 +8,10 @@ $pacPath = "$HOME/bin/pac/tools/pac"
 # Configuration file path
 $configPath = Join-Path $PSScriptRoot "msapp-downloader-config.json"
 
-# Colors for better visibility
-$Host.UI.RawUI.BackgroundColor = 'Black'
-$Host.UI.RawUI.ForegroundColor = 'White'
+# Colors for better visibility - matching VS Code terminal theme
+$Host.UI.RawUI.BackgroundColor = 'DarkBlue'  # Closest to #011f44 from VS Code settings
+$Host.UI.RawUI.ForegroundColor = 'Cyan'      # Matches #00a2ff from VS Code settings
+Clear-Host  # Apply the new background color
 
 # Configuration functions
 function Load-Configuration {
@@ -1028,57 +1029,111 @@ while ($true) {
             # Get all apps
             Write-ColorOutput Green "Fetching all canvas apps..."
             Write-Host "Environment: $script:currentEnvironment" -ForegroundColor Gray
+            Write-Host "Running: $pacPath canvas list --environment $script:currentEnvironment" -ForegroundColor DarkGray
             $appsOutput = & $pacPath canvas list --environment $script:currentEnvironment 2>&1 | Out-String
             
             if ($LASTEXITCODE -ne 0) {
                 Write-ColorOutput Red "❌ Error: Unable to fetch apps"
+                Write-Host "Output:" -ForegroundColor Yellow
+                Write-Host $appsOutput
                 Read-Host "Press Enter to continue"
                 continue
             }
             
-            # Parse the PAC CLI output
+            # Show first 500 chars of output for debugging
+            Write-Host ""
+            Write-ColorOutput Yellow "DEBUG: First 500 chars of PAC output:"
+            Write-Host $appsOutput.Substring(0, [Math]::Min(500, $appsOutput.Length)) -ForegroundColor DarkGray
+            Write-Host "..." -ForegroundColor DarkGray
+            
+            # Parse the PAC CLI output - ULTRA SIMPLE APPROACH
             $lines = $appsOutput -split "`n"
             $apps = @()
             
-            # Skip header lines and parse actual app entries
-            $headerFound = $false
-            $dashLineFound = $false
+            Write-Host ""
+            Write-ColorOutput Yellow "DEBUG: Analyzing output format..."
+            Write-Host "Total lines: $($lines.Count)" -ForegroundColor Gray
             
+            # Show first 10 non-empty lines to understand format
+            $nonEmptyCount = 0
+            foreach ($line in $lines) {
+                $trimmed = $line.Trim()
+                if (-not [string]::IsNullOrWhiteSpace($trimmed) -and $nonEmptyCount -lt 10) {
+                    $nonEmptyCount++
+                    Write-Host "Sample $nonEmptyCount`: [$trimmed]" -ForegroundColor DarkGray
+                }
+            }
+            
+            Write-Host ""
+            Write-ColorOutput Yellow "Attempting multiple parsing strategies..."
+            
+            # Strategy 1: Look for lines with dates (most reliable indicator of app entries)
+            Write-Host "Strategy 1: Date-based parsing..." -ForegroundColor Cyan
             foreach ($line in $lines) {
                 $trimmed = $line.Trim()
                 
-                # Skip empty lines
+                # Skip empty, short lines, and known headers
                 if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
+                if ($trimmed.Length -lt 10) { continue }
+                if ($trimmed -match '^(Name|Canvas|Owner|Modified|Created|Environment|Active|Press|---)') { continue }
                 
-                # Look for the header separator (dashes)
-                if ($trimmed -match '^-+$') {
-                    $dashLineFound = $true
-                    continue
-                }
-                
-                # Skip lines until we've passed the header
-                if (-not $dashLineFound) { continue }
-                
-                # Skip footer lines
-                if ($trimmed -match '^Press Enter|^No canvas|^Active auth|^Environment ID') { continue }
-                
-                # Parse app lines (format: AppName    Owner Name    Date)
-                # The date is always at the end in MM/DD/YYYY format
-                if ($trimmed -match '(.+?)\s{2,}(.+?)\s{2,}(\d{1,2}/\d{1,2}/\d{4})') {
-                    $appName = $matches[1].Trim()
-                    $owner = $matches[2].Trim()  
-                    $date = $matches[3].Trim()
+                # Look for lines containing a date in MM/DD/YYYY or M/D/YYYY format
+                if ($trimmed -match '(\d{1,2}/\d{1,2}/\d{4})') {
+                    $dateFound = $matches[1]
                     
-                    # Skip if this is actually the header row
-                    if ($appName -eq "Name" -or $appName -eq "Canvas App Name") { continue }
+                    # Try to extract app name (everything before the date, minus owner)
+                    # Patterns to try:
+                    # 1. AppName    Owner Name    Date
+                    # 2. AppName    Date
+                    # 3. Just extract everything before the date
                     
-                    $apps += @{
-                        Id = "name:$appName"
-                        Name = $appName
-                        Date = $date
+                    $beforeDate = $trimmed.Substring(0, $trimmed.IndexOf($dateFound)).Trim()
+                    
+                    # Split by multiple spaces to separate app name from owner
+                    $parts = $beforeDate -split '\s{2,}'
+                    
+                    if ($parts.Count -ge 1) {
+                        $appName = $parts[0].Trim()
+                        
+                        # Skip if this looks like a header
+                        if ($appName -notmatch '^(Name|Canvas|Owner|Modified|Created)$' -and $appName.Length -gt 0) {
+                            $apps += @{
+                                Id = "name:$appName"
+                                Name = $appName
+                                Date = $dateFound
+                            }
+                            Write-Host "  Found app: '$appName' (Date: $dateFound)" -ForegroundColor Green
+                        }
                     }
                 }
             }
+            
+            # If no apps found with Strategy 1, try Strategy 2
+            if ($apps.Count -eq 0) {
+                Write-Host ""
+                Write-Host "Strategy 2: GUID-based parsing..." -ForegroundColor Cyan
+                foreach ($line in $lines) {
+                    $trimmed = $line.Trim()
+                    
+                    # Look for GUID pattern (in case format includes GUIDs)
+                    if ($trimmed -match '([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})') {
+                        $guid = $matches[1]
+                        # Extract app name after GUID
+                        $afterGuid = $trimmed.Substring($trimmed.IndexOf($guid) + $guid.Length).Trim()
+                        if ($afterGuid.Length -gt 0) {
+                            $apps += @{
+                                Id = $guid
+                                Name = $afterGuid
+                                Date = ""
+                            }
+                            Write-Host "  Found app with GUID: '$afterGuid'" -ForegroundColor Green
+                        }
+                    }
+                }
+            }
+            
+            Write-Host ""
+            Write-ColorOutput Yellow "Parsing complete. Found $($apps.Count) apps."
             
             Write-Host ""
             

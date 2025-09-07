@@ -58,6 +58,42 @@ The batch download feature was completely broken - showing "No apps found" despi
 3. Consider adding retry logic for failed downloads
 4. Could add option to filter apps by date range
 
+## Continued Debugging
+
+### Batch Download Still Failing
+**User:** "omg! it is still not listing out all the apps now. see last screenshot"
+
+The batch download was still showing "No apps found to download" despite 108 lines of output from PAC CLI.
+
+### Ultra-Robust Parser Implementation
+Implemented comprehensive debugging and multiple parsing strategies:
+
+1. **Enhanced Debug Output:**
+   - Shows first 500 chars of PAC output
+   - Displays first 10 non-empty lines for format analysis
+   - Logs each parsing attempt with results
+
+2. **Date-Based Parsing Strategy:**
+   - Looks for any line containing MM/DD/YYYY date format
+   - Extracts app name as text before the date
+   - Skips known header words
+   - Most reliable indicator of actual app entries
+
+3. **GUID-Based Fallback:**
+   - If no date-based apps found, looks for GUID patterns
+   - Extracts app name after GUID
+   - Handles alternate PAC CLI output formats
+
+## Additional Changes
+
+### Console Color Theme Update
+**User Request:** "can you change the background of the script running to the dark blue I'm using in .vscode/settings.json"
+
+Updated the PowerShell script console colors to match VS Code terminal theme:
+- Background: Changed from 'Black' to 'DarkBlue' (closest to #011f44)
+- Foreground: Changed from 'White' to 'Cyan' (matches #00a2ff)
+- Added Clear-Host to apply background immediately on script start
+
 ## Code Examples
 
 ### Before (Broken):
