@@ -447,56 +447,42 @@ function Download-CanvasApps {
     Write-Host $appsOutput
     
     # Parse the output to extract app information
-    # Try multiple parsing strategies
     $lines = $appsOutput -split "`n"
     $apps = @()
-    $headerFound = $false
+    $dashLineFound = $false
     
     foreach ($line in $lines) {
-        # Skip empty lines and headers
-        if ([string]::IsNullOrWhiteSpace($line)) { continue }
-        if ($line -match "Canvas App Name|Environment|^-+$") { 
-            $headerFound = $true
-            continue 
-        }
+        $trimmed = $line.Trim()
         
-        # Strategy 1: Look for GUID pattern (original)
-        if ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\s+(.+)") {
-            $apps += @{
-                Id = $matches[1].Trim()
-                Name = $matches[2].Trim()
-            }
+        # Skip empty lines
+        if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
+        
+        # Look for the header separator (dashes)
+        if ($trimmed -match '^-+$') {
+            $dashLineFound = $true
             continue
         }
         
-        # Strategy 2: Parse name-owner-date format (from screenshot)
-        # If line contains text and ends with a date pattern
-        if ($headerFound -and $line -match "^(.+?)\s{2,}(.+?)\s+(\d{1,2}/\d{1,2}/\d{4})\s*$") {
+        # Skip lines until we've passed the header
+        if (-not $dashLineFound) { continue }
+        
+        # Skip footer lines
+        if ($trimmed -match '^Press Enter|^No canvas|^Active auth|^Environment ID') { continue }
+        
+        # Parse app lines (format: AppName    Owner Name    Date)
+        # The date is always at the end in MM/DD/YYYY format
+        if ($trimmed -match '(.+?)\s{2,}(.+?)\s{2,}(\d{1,2}/\d{1,2}/\d{4})') {
             $appName = $matches[1].Trim()
             $owner = $matches[2].Trim()
             $date = $matches[3].Trim()
             
-            # Generate a temporary ID based on app name (will need to fetch real ID)
-            $tempId = "temp_" + ($appName -replace '[^a-zA-Z0-9]', '_')
+            # Skip if this is actually the header row
+            if ($appName -eq "Name" -or $appName -eq "Canvas App Name") { continue }
             
             $apps += @{
-                Id = $tempId
+                Id = "name:$appName"
                 Name = $appName
-                Owner = $owner
                 Date = $date
-            }
-            continue
-        }
-        
-        # Strategy 3: If it looks like an app name line (simple heuristic)
-        if ($headerFound -and $line.Length -gt 10 -and -not ($line -match "^Press Enter|^No canvas apps")) {
-            # Try to extract just the app name if we can't parse the full format
-            $possibleName = $line -split '\s{2,}' | Select-Object -First 1
-            if ($possibleName -and $possibleName.Trim().Length -gt 0) {
-                $apps += @{
-                    Id = "unknown_" + ($apps.Count + 1)
-                    Name = $possibleName.Trim()
-                }
             }
         }
     }
@@ -511,7 +497,7 @@ function Download-CanvasApps {
     Write-ColorOutput Green "Found $($apps.Count) canvas app(s)"
     Write-Host ""
     Write-ColorOutput Yellow "OPTIONS:"
-    Write-Host "  1. 📥 Download specific app (enter App ID)"
+    Write-Host "  1. 📥 Download specific app"
     Write-Host "  2. 📦 Download all apps"
     Write-Host "  3. 🔙 Back to Main Menu"
     Write-Host ""
@@ -524,9 +510,10 @@ function Download-CanvasApps {
             Write-Host ""
             Write-ColorOutput Yellow "Select an app by number:"
             for ($i = 0; $i -lt $apps.Count; $i++) {
-                Write-Host "  $($i + 1). $($apps[$i].Name)"
-                if ($apps[$i].Owner) {
-                    Write-Host "      Owner: $($apps[$i].Owner)"
+                $displayText = "{0,3}. {1}" -f ($i + 1), $apps[$i].Name
+                Write-Host $displayText -ForegroundColor Cyan
+                if ($apps[$i].Date) {
+                    Write-Host "      Modified: $($apps[$i].Date)" -ForegroundColor Gray
                 }
             }
             Write-Host ""
@@ -537,14 +524,9 @@ function Download-CanvasApps {
                 if ($index -ge 0 -and $index -lt $apps.Count) {
                     $selectedApp = $apps[$index]
                     
-                    # If we have a temp ID, we need to get the real ID
-                    if ($selectedApp.Id -like "temp_*" -or $selectedApp.Id -like "unknown_*") {
-                        Write-ColorOutput Yellow "Fetching actual App ID for: $($selectedApp.Name)"
-                        # Try to get the app ID using the app name
-                        Download-SingleAppByName -AppName $selectedApp.Name
-                    } else {
-                        Download-SingleApp -AppId $selectedApp.Id -AppName $selectedApp.Name
-                    }
+                    # Since we're using app names now, use the name-based download
+                    Write-ColorOutput Yellow "Downloading: $($selectedApp.Name)"
+                    Download-SingleAppByName -AppName $selectedApp.Name
                 } else {
                     Write-ColorOutput Red "❌ Invalid selection"
                     Read-Host "Press Enter to continue"
@@ -666,14 +648,18 @@ function Download-AllApps {
     Write-Host ""
     Write-ColorOutput Yellow "This will download all $($Apps.Count) apps."
     
-    # Show the apps that will be downloaded
+    # Show the apps that will be downloaded in a compact format
     Write-Host ""
     Write-ColorOutput Green "Apps to download:"
+    Write-Host ""
+    
+    # Display apps in a cleaner format
+    $index = 1
     foreach ($app in $Apps) {
-        Write-Host "  - $($app.Name)"
-        if ($app.Owner) {
-            Write-Host "    Owner: $($app.Owner)"
-        }
+        # Format the app name with index
+        $displayLine = "{0,3}. {1,-40} {2}" -f $index, $app.Name, $(if($app.Date) { "($($app.Date))" } else { "" })
+        Write-Host $displayLine -ForegroundColor Cyan
+        $index++
     }
     
     Write-Host ""
@@ -724,13 +710,8 @@ function Download-AllApps {
         Write-Host ""
         Write-ColorOutput Cyan "Downloading ($($Apps.IndexOf($app) + 1)/$($Apps.Count)): $($app.Name)"
         
-        # If we still don't have a real ID, try downloading by name
-        if ($app.Id -like "temp_*" -or $app.Id -like "unknown_*" -or $app.Id -like "app_*") {
-            Write-ColorOutput Yellow "Attempting to download by name..."
-            & $pacPath canvas download --environment $script:currentEnvironment --app "$($app.Name)" --path $filePath 2>&1
-        } else {
-            & $pacPath canvas download --environment $script:currentEnvironment --app $app.Id --path $filePath
-        }
+        # PAC CLI supports downloading by app name
+        & $pacPath canvas download --environment $script:currentEnvironment --app "$($app.Name)" --path $filePath 2>&1 | Out-Null
         
         if ($LASTEXITCODE -eq 0) {
             Write-ColorOutput Green "✅ Downloaded: $fileName"
@@ -746,9 +727,17 @@ function Download-AllApps {
     
     Write-Host ""
     Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
-    Write-ColorOutput Yellow "Download Summary:"
-    Write-ColorOutput Green "✅ Successful: $successCount"
-    Write-ColorOutput Red "❌ Failed: $failCount"
+    Write-ColorOutput Yellow "📊 DOWNLOAD SUMMARY"
+    Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
+    Write-Host ""
+    Write-Host "Environment: $script:currentEnvironment" -ForegroundColor Cyan
+    Write-Host "Total Apps: $($Apps.Count)" -ForegroundColor White
+    Write-ColorOutput Green "✅ Downloaded: $successCount"
+    if ($failCount -gt 0) {
+        Write-ColorOutput Red "❌ Failed: $failCount"
+    }
+    Write-Host "Download Location: $script:downloadDirectory" -ForegroundColor Gray
+    Write-Host ""
     Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
     
     Write-Host ""
@@ -1073,81 +1062,46 @@ while ($true) {
                 continue
             }
             
-            # Parse apps - ULTRA FLEXIBLE PARSING
+            # Parse the PAC CLI output
             $lines = $appsOutput -split "`n"
             $apps = @()
-            $skipPatterns = @(
-                '^Connected as',
-                '^Active Display Name',
-                '^Environment',
-                '^Unique Name',
-                '^DEFAULT',
-                '^\s*$',
-                '^-+$',
-                '^Canvas App',
-                '^No canvas apps',
-                '^Press Enter'
-            )
             
-            Write-Host ""
-            Write-ColorOutput Yellow "Parsing canvas apps list..."
-            Write-Host "Total lines to parse: $($lines.Count)" -ForegroundColor Gray
+            # Skip header lines and parse actual app entries
+            $headerFound = $false
+            $dashLineFound = $false
             
             foreach ($line in $lines) {
-                # Skip empty or header lines
-                $skip = $false
-                foreach ($pattern in $skipPatterns) {
-                    if ($line -match $pattern) {
-                        $skip = $true
-                        break
-                    }
-                }
-                if ($skip) { continue }
+                $trimmed = $line.Trim()
                 
-                # Method 1: Look for GUID pattern (standard format)
-                if ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\s+(.+)") {
-                    $apps += @{
-                        Id = $matches[1].Trim()
-                        Name = $matches[2].Trim()
-                        Source = "GUID format"
-                    }
-                    Write-Host "  Found (GUID): $($matches[2].Trim())" -ForegroundColor DarkGray
+                # Skip empty lines
+                if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
+                
+                # Look for the header separator (dashes)
+                if ($trimmed -match '^-+$') {
+                    $dashLineFound = $true
                     continue
                 }
                 
-                # Method 2: Lines with dates (your environment's format)
-                # Look for pattern: AppName    Owner    Date
-                if ($line -match "(.+?)\s{2,}(.+?)\s+(\d{1,2}/\d{1,2}/\d{4})") {
+                # Skip lines until we've passed the header
+                if (-not $dashLineFound) { continue }
+                
+                # Skip footer lines
+                if ($trimmed -match '^Press Enter|^No canvas|^Active auth|^Environment ID') { continue }
+                
+                # Parse app lines (format: AppName    Owner Name    Date)
+                # The date is always at the end in MM/DD/YYYY format
+                if ($trimmed -match '(.+?)\s{2,}(.+?)\s{2,}(\d{1,2}/\d{1,2}/\d{4})') {
                     $appName = $matches[1].Trim()
-                    $owner = $matches[2].Trim()
+                    $owner = $matches[2].Trim()  
                     $date = $matches[3].Trim()
                     
-                    # Skip if the app name looks like a header
-                    if ($appName -notmatch "^(Environment|Canvas|Display|Name|Owner|Modified)") {
-                        $apps += @{
-                            Id = "name:$appName"  # Use name as ID since we don't have GUID
-                            Name = $appName
-                            Owner = $owner
-                            Date = $date
-                            Source = "Name-Owner-Date format"
-                        }
-                        Write-Host "  Found (Date): $appName" -ForegroundColor DarkGray
-                        continue
-                    }
-                }
-                
-                # Method 3: Just app names (simple list format)
-                # If line has substantial content and doesn't look like a system message
-                $trimmed = $line.Trim()
-                if ($trimmed.Length -gt 3 -and $trimmed -notmatch '^\*|^https://|^[a-f0-9]{8}-') {
-                    # Check if it looks like an app name
-                    if ($trimmed -match '^[\w\s\-\.]+') {
-                        $apps += @{
-                            Id = "name:$trimmed"
-                            Name = $trimmed
-                            Source = "Name-only format"
-                        }
-                        Write-Host "  Found (Name): $trimmed" -ForegroundColor DarkGray
+                    # Skip if this is actually the header row
+                    if ($appName -eq "Name" -or $appName -eq "Canvas App Name") { continue }
+                    
+                    $apps += @{
+                        Id = "name:$appName"
+                        Name = $appName
+                        Date = $date
                     }
                 }
             }
