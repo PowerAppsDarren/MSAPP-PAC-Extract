@@ -28,15 +28,17 @@ pwsh download-msapps.ps1
    - Switch between authentication profiles
    - Delete authentication profiles
    - View current authentication status
+   - **Settings automatically saved for next session**
 
 2. **🌍 Select Environment**
    - List all available Power Platform environments
    - Select the active environment for operations
    - Automatically fetches environment details
+   - **Last used environment is remembered**
 
 3. **📱 Download Canvas Apps**
    - View all canvas apps in selected environment
-   - Download individual apps by App ID
+   - Download individual apps by number selection
    - Automatic filename sanitization with timestamps
    - Option to extract apps immediately after download
 
@@ -50,6 +52,7 @@ pwsh download-msapps.ps1
    - Set custom download location
    - Create directories if they don't exist
    - Default: `./downloads` folder
+   - **Directory preference is saved**
 
 6. **ℹ️ Show Current Settings**
    - Display PAC CLI location
@@ -57,9 +60,19 @@ pwsh download-msapps.ps1
    - Current environment details
    - Active authentication profile
    - Count of downloaded and extracted apps
+   - **View all saved configuration settings**
 
 7. **🔄 Refresh Environment List**
    - Re-fetch the list of available environments
+
+8. **🗑️ Clear Saved Settings** *(NEW)*
+   - Remove all saved preferences
+   - Reset to default settings
+   - Does NOT delete PAC CLI auth profiles
+
+9. **❌ Exit**
+   - Close the application
+   - Configuration is automatically saved
 
 ## 📁 Directory Structure
 

@@ -5,9 +5,59 @@
 # Set PAC CLI path
 $pacPath = "$HOME/bin/pac/tools/pac"
 
+# Configuration file path
+$configPath = Join-Path $PSScriptRoot "msapp-downloader-config.json"
+
 # Colors for better visibility
 $Host.UI.RawUI.BackgroundColor = 'Black'
 $Host.UI.RawUI.ForegroundColor = 'White'
+
+# Configuration functions
+function Load-Configuration {
+    if (Test-Path $configPath) {
+        try {
+            $config = Get-Content $configPath | ConvertFrom-Json
+            return $config
+        } catch {
+            Write-ColorOutput Yellow "⚠️  Could not load saved configuration. Starting fresh."
+            return @{}
+        }
+    }
+    return @{}
+}
+
+function Save-Configuration {
+    param(
+        [hashtable]$Config
+    )
+    
+    try {
+        # Ensure the config is a proper hashtable
+        if ($null -eq $Config) {
+            $Config = @{}
+        }
+        
+        # Convert hashtable to JSON and save
+        $jsonContent = $Config | ConvertTo-Json -Depth 3
+        $jsonContent | Set-Content $configPath -Force
+        
+        # Don't show success message every time - it's too verbose
+        # Only show on explicit saves or errors
+    } catch {
+        Write-ColorOutput Red "❌ Could not save configuration: $_"
+        Write-Host "Error details: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+function Update-ConfigValue {
+    param(
+        [string]$Key,
+        $Value
+    )
+    
+    $script:config[$Key] = $Value
+    Save-Configuration -Config $script:config
+}
 
 function Write-ColorOutput($ForegroundColor, $Text) {
     $fc = $Host.UI.RawUI.ForegroundColor
@@ -21,6 +71,16 @@ function Show-MainMenu {
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     🚀 POWER PLATFORM MSAPP DOWNLOADER"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+    
+    # Show current environment if set
+    if ($script:currentEnvironment) {
+        Write-Host ""
+        Write-ColorOutput Green "📍 Current Environment: $script:currentEnvironment"
+    }
+    if ($script:config.LastAuthProfile) {
+        Write-ColorOutput Blue "👤 Auth Profile: $($script:config.LastAuthProfile)"
+    }
+    
     Write-Host ""
     Write-ColorOutput Green "MAIN MENU:"
     Write-Host "  1. 🔐 Manage Authentication"
@@ -30,7 +90,8 @@ function Show-MainMenu {
     Write-Host "  5. 📁 Configure Download Directory"
     Write-Host "  6. ℹ️  Show Current Settings"
     Write-Host "  7. 🔄 Refresh Environment List"
-    Write-Host "  8. ❌ Exit"
+    Write-Host "  8. 🗑️  Clear Saved Settings"
+    Write-Host "  9. ❌ Exit"
     Write-Host ""
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
 }
@@ -88,12 +149,23 @@ function Create-NewAuth {
             
             if ([string]::IsNullOrWhiteSpace($profileName)) {
                 & $pacPath auth create --environment $envUrl
+                # Generate a profile name from the environment URL
+                $profileName = ($envUrl -replace 'https://', '' -replace '\..*', '')
             } else {
                 & $pacPath auth create --environment $envUrl --name $profileName
             }
             
-            Write-Host ""
-            Write-ColorOutput Green "✅ Authentication created successfully!"
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host ""
+                Write-ColorOutput Green "✅ Authentication created successfully!"
+                
+                # Save to config
+                Update-ConfigValue -Key "LastAuthProfile" -Value $profileName
+                Update-ConfigValue -Key "LastEnvironmentUrl" -Value $envUrl
+                Update-ConfigValue -Key "LastAuthType" -Value "Interactive"
+                Update-ConfigValue -Key "LastAuthTime" -Value (Get-Date).ToString()
+            }
+            
             Read-Host "Press Enter to continue"
         }
         "2" {
@@ -108,10 +180,26 @@ function Create-NewAuth {
                 [Runtime.InteropServices.Marshal]::SecureStringToBSTR($clientSecret)
             )
             
-            & $pacPath auth create --tenant $tenantId --applicationId $appId --clientSecret $secret --environment $envUrl
+            $profileName = Read-Host "Profile Name (optional)"
+            if ([string]::IsNullOrWhiteSpace($profileName)) {
+                $profileName = "sp_" + ($appId.Substring(0, 8))
+            }
             
-            Write-Host ""
-            Write-ColorOutput Green "✅ Service Principal authentication created!"
+            & $pacPath auth create --tenant $tenantId --applicationId $appId --clientSecret $secret --environment $envUrl --name $profileName
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host ""
+                Write-ColorOutput Green "✅ Service Principal authentication created!"
+                
+                # Save to config (don't save secret)
+                Update-ConfigValue -Key "LastAuthProfile" -Value $profileName
+                Update-ConfigValue -Key "LastEnvironmentUrl" -Value $envUrl
+                Update-ConfigValue -Key "LastTenantId" -Value $tenantId
+                Update-ConfigValue -Key "LastAppId" -Value $appId
+                Update-ConfigValue -Key "LastAuthType" -Value "ServicePrincipal"
+                Update-ConfigValue -Key "LastAuthTime" -Value (Get-Date).ToString()
+            }
+            
             Read-Host "Press Enter to continue"
         }
         "3" {
@@ -131,7 +219,7 @@ function Select-Environment {
     Write-Host ""
     
     # Get environments list
-    $envOutput = & $pacPath env list 2>&1
+    $envOutput = & $pacPath env list 2>&1 | Out-String
     
     if ($LASTEXITCODE -ne 0) {
         Write-ColorOutput Red "❌ Error: Unable to fetch environments. Please check authentication."
@@ -140,18 +228,186 @@ function Select-Environment {
         return $null
     }
     
-    Write-Host $envOutput
-    Write-Host ""
+    # Parse the environment list to extract environment details
+    $lines = $envOutput -split "`n"
+    $environments = @()
+    $inTable = $false
     
-    Write-ColorOutput Yellow "Enter the Environment ID or URL from the list above:"
-    $selectedEnv = Read-Host "Environment"
+    foreach ($line in $lines) {
+        # Skip empty lines
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        
+        # Look for environment entries (they typically have URLs or GUIDs)
+        if ($line -match "https://[^\s]+") {
+            # Extract URL and other details from the line
+            $envUrl = $matches[0]
+            $envName = ""
+            $envId = ""
+            $uniqueName = ""
+            
+            # Try to extract environment ID (GUID pattern)
+            if ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})") {
+                $envId = $matches[1]
+            }
+            
+            # Try to extract display name (usually first part of the line)
+            $parts = $line -split '\s{2,}'
+            if ($parts.Count -gt 0) {
+                # First non-empty part that's not a URL or GUID
+                foreach ($part in $parts) {
+                    $trimmed = $part.Trim()
+                    if ($trimmed -and -not ($trimmed -match "^https://" -or $trimmed -match "^[a-f0-9]{8}-")) {
+                        $envName = $trimmed
+                        break
+                    }
+                }
+            }
+            
+            # Extract unique name from URL if possible
+            if ($envUrl -match "https://([^\.]+)\.") {
+                $uniqueName = $matches[1]
+            }
+            
+            $environments += @{
+                Name = if ($envName) { $envName } else { $uniqueName }
+                Id = if ($envId) { $envId } else { $envUrl }
+                Url = $envUrl
+                UniqueName = $uniqueName
+                FullLine = $line.Trim()
+            }
+        }
+        # Alternative: Look for lines with environment IDs without URLs
+        elseif ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})") {
+            $envId = $matches[1]
+            $parts = $line -split '\s{2,}'
+            $envName = if ($parts.Count -gt 0) { $parts[0].Trim() } else { "Environment" }
+            
+            $environments += @{
+                Name = $envName
+                Id = $envId
+                Url = ""
+                UniqueName = ""
+                FullLine = $line.Trim()
+            }
+        }
+    }
+    
+    # If no environments found, show raw output and ask for manual input
+    if ($environments.Count -eq 0) {
+        Write-ColorOutput Yellow "Could not parse environment list. Here's the raw output:"
+        Write-Host $envOutput
+        Write-Host ""
+        Write-ColorOutput Yellow "Please enter the Environment ID or URL manually:"
+        $selectedEnv = Read-Host "Environment"
+    }
+    else {
+        # Display environments with numbers - COMPACT VIEW
+        Write-ColorOutput Green "Available Environments:"
+        Write-Host ""
+        
+        # Display in columns for better use of space
+        $columnWidth = 40
+        for ($i = 0; $i -lt $environments.Count; $i++) {
+            $env = $environments[$i]
+            $number = "{0,2}." -f ($i + 1)
+            $displayName = if ($env.Name) { $env.Name } else { $env.UniqueName }
+            
+            # Truncate long names to fit in column
+            if ($displayName.Length -gt ($columnWidth - 4)) {
+                $displayName = $displayName.Substring(0, $columnWidth - 7) + "..."
+            }
+            
+            # Format the line with number and name
+            Write-Host $number -NoNewline -ForegroundColor Yellow
+            Write-Host " $displayName" -ForegroundColor Cyan
+        }
+        
+        Write-Host ""
+        
+        # Check if there's a current/active environment
+        $currentEnvLine = $lines | Where-Object { $_ -match "\*" -or $_ -match "Active" -or $_ -match "Current" }
+        if ($currentEnvLine) {
+            Write-ColorOutput Blue "📍 Currently selected environment is marked with * or Active"
+            Write-Host ""
+        }
+        
+        Write-ColorOutput Yellow "Select an environment by number (1-$($environments.Count)):"
+        Write-Host "Or enter 'D' to show detailed info for all environments"
+        Write-Host "Or enter 'M' to manually input an Environment ID/URL"
+        Write-Host "Or enter 'C' to cancel"
+        Write-Host ""
+        
+        $selection = Read-Host "Your choice"
+        
+        if ($selection -eq 'C' -or $selection -eq 'c') {
+            Write-ColorOutput Yellow "Environment selection cancelled."
+            Read-Host "Press Enter to continue"
+            return $null
+        }
+        elseif ($selection -eq 'D' -or $selection -eq 'd') {
+            # Show detailed view
+            Write-Host ""
+            Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+            Write-ColorOutput Yellow "DETAILED ENVIRONMENT INFORMATION"
+            Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+            Write-Host ""
+            
+            for ($i = 0; $i -lt $environments.Count; $i++) {
+                $env = $environments[$i]
+                Write-Host "$($i + 1). " -NoNewline -ForegroundColor Yellow
+                Write-Host "$($env.Name)" -ForegroundColor Cyan
+                if ($env.Url) {
+                    Write-Host "   URL: $($env.Url)" -ForegroundColor Gray
+                }
+                if ($env.Id -and $env.Id -ne $env.Url) {
+                    Write-Host "   ID: $($env.Id)" -ForegroundColor Gray
+                }
+                Write-Host ""
+            }
+            
+            Write-Host "Press Enter to return to selection menu..." -ForegroundColor Yellow
+            Read-Host
+            
+            # Recursive call to show the menu again
+            return Select-Environment
+        }
+        elseif ($selection -eq 'M' -or $selection -eq 'm') {
+            Write-Host ""
+            Write-ColorOutput Yellow "Enter the Environment ID or URL manually:"
+            $selectedEnv = Read-Host "Environment"
+        }
+        elseif ($selection -match '^\d+$') {
+            $index = [int]$selection - 1
+            if ($index -ge 0 -and $index -lt $environments.Count) {
+                $selectedEnv = $environments[$index].Id
+                Write-Host ""
+                Write-ColorOutput Green "Selected: $($environments[$index].Name)"
+            }
+            else {
+                Write-ColorOutput Red "❌ Invalid selection. Please choose a number between 1 and $($environments.Count)"
+                Read-Host "Press Enter to continue"
+                return $null
+            }
+        }
+        else {
+            Write-ColorOutput Red "❌ Invalid input"
+            Read-Host "Press Enter to continue"
+            return $null
+        }
+    }
     
     # Select the environment
+    Write-Host ""
+    Write-ColorOutput Cyan "Selecting environment..."
     & $pacPath env select --environment $selectedEnv
     
     if ($LASTEXITCODE -eq 0) {
         Write-ColorOutput Green "✅ Environment selected successfully!"
         $script:currentEnvironment = $selectedEnv
+        
+        # Save to config
+        Update-ConfigValue -Key "LastEnvironment" -Value $selectedEnv
+        Update-ConfigValue -Key "LastEnvironmentTime" -Value (Get-Date).ToString()
     } else {
         Write-ColorOutput Red "❌ Failed to select environment"
     }
@@ -575,6 +831,9 @@ function Configure-DownloadDirectory {
         } else {
             $script:downloadDirectory = $newPath
             Write-ColorOutput Green "✅ Download directory updated!"
+            
+            # Save to config
+            Update-ConfigValue -Key "DownloadDirectory" -Value $newPath
         }
     }
     
@@ -615,22 +874,138 @@ function Show-CurrentSettings {
     Write-Host "  Extracted apps: $extractedCount"
     Write-Host ""
     
+    Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
+    Write-ColorOutput Yellow "SAVED CONFIGURATION:"
+    Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
+    
+    if ($script:config -and $script:config.Count -gt 0) {
+        Write-Host ""
+        Write-Host "📝 Configuration File: $configPath" -ForegroundColor Cyan
+        Write-Host ""
+        
+        if ($script:config.LastAuthProfile) {
+            Write-Host "🔐 Saved Auth Profile: $($script:config.LastAuthProfile)" -ForegroundColor White
+            Write-Host "   Type: $($script:config.LastAuthType)" -ForegroundColor Gray
+            Write-Host "   Last Used: $($script:config.LastAuthTime)" -ForegroundColor Gray
+        }
+        
+        if ($script:config.LastEnvironment) {
+            Write-Host ""
+            Write-Host "🌍 Saved Environment: $($script:config.LastEnvironment)" -ForegroundColor White
+            Write-Host "   Last Used: $($script:config.LastEnvironmentTime)" -ForegroundColor Gray
+        }
+        
+        if ($script:config.LastTenantId) {
+            Write-Host ""
+            Write-Host "🏢 Saved Tenant ID: $($script:config.LastTenantId)" -ForegroundColor White
+        }
+        
+        if ($script:config.LastAppId) {
+            Write-Host "📱 Saved App ID: $($script:config.LastAppId)" -ForegroundColor White
+        }
+        
+        if ($script:config.DownloadDirectory) {
+            Write-Host ""
+            Write-Host "📁 Saved Download Dir: $($script:config.DownloadDirectory)" -ForegroundColor White
+        }
+    } else {
+        Write-Host ""
+        Write-Host "  No saved configuration found" -ForegroundColor Gray
+        Write-Host "  Settings will be saved as you use the app" -ForegroundColor Gray
+    }
+    
+    Write-Host ""
+    Write-ColorOutput Green "════════════════════════════════════════════════════════════════"
+    Write-Host ""
+    
     Read-Host "Press Enter to continue"
 }
 
-# Initialize variables
-$script:currentEnvironment = ""
-$script:downloadDirectory = Join-Path (Get-Location) "downloads"
+# Load configuration
+$script:config = Load-Configuration
+
+# Initialize config as hashtable if it's empty
+if (-not $script:config -or $script:config.GetType().Name -ne "Hashtable") {
+    $script:config = @{}
+}
+
+# Initialize variables with saved values or defaults
+$script:currentEnvironment = if ($script:config.LastEnvironment) { $script:config.LastEnvironment } else { "" }
+$script:downloadDirectory = if ($script:config.DownloadDirectory) { $script:config.DownloadDirectory } else { Join-Path (Get-Location) "downloads" }
+
+# Save initial config if it doesn't exist
+if (-not (Test-Path $configPath)) {
+    $script:config.DownloadDirectory = $script:downloadDirectory
+    $script:config.ConfigVersion = "1.0"
+    $script:config.CreatedDate = (Get-Date).ToString()
+    Save-Configuration -Config $script:config
+}
 
 # Create download directory if it doesn't exist
 if (!(Test-Path $script:downloadDirectory)) {
     New-Item -ItemType Directory -Path $script:downloadDirectory -Force | Out-Null
 }
 
+# Auto-apply saved settings on startup
+if ($script:config -and ($script:config.LastAuthProfile -or $script:config.LastEnvironment)) {
+    Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+    Write-ColorOutput Yellow "     🔄 LOADING SAVED CONFIGURATION"
+    Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+    Write-Host ""
+    
+    if ($script:config.LastAuthProfile) {
+        Write-Host "📝 Last Auth Profile: $($script:config.LastAuthProfile)" -ForegroundColor Green
+        Write-Host "   Type: $($script:config.LastAuthType)" -ForegroundColor Gray
+        Write-Host "   Last Used: $($script:config.LastAuthTime)" -ForegroundColor Gray
+        
+        # Try to activate the saved auth profile
+        Write-Host ""
+        Write-Host "Activating saved authentication profile..." -ForegroundColor Cyan
+        & $pacPath auth select --name $script:config.LastAuthProfile 2>&1 | Out-Null
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput Green "✅ Authentication profile activated"
+        } else {
+            Write-ColorOutput Yellow "⚠️  Could not activate saved profile. You may need to re-authenticate."
+        }
+    }
+    
+    if ($script:config.LastEnvironment) {
+        Write-Host ""
+        Write-Host "🌍 Last Environment: $($script:config.LastEnvironment)" -ForegroundColor Green
+        Write-Host "   Last Used: $($script:config.LastEnvironmentTime)" -ForegroundColor Gray
+        
+        # Auto-select the saved environment
+        Write-Host ""
+        Write-Host "Auto-selecting saved environment..." -ForegroundColor Cyan
+        & $pacPath env select --environment $script:config.LastEnvironment 2>&1 | Out-Null
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput Green "✅ Environment selected"
+            $script:currentEnvironment = $script:config.LastEnvironment
+        } else {
+            Write-ColorOutput Yellow "⚠️  Could not select saved environment. Please select manually."
+            $script:currentEnvironment = ""
+        }
+    }
+    
+    if ($script:config.DownloadDirectory) {
+        Write-Host ""
+        Write-Host "📁 Download Directory: $($script:config.DownloadDirectory)" -ForegroundColor Green
+    }
+    
+    Write-Host ""
+    Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+    Write-Host ""
+    Write-Host "Press Enter to continue to main menu..." -ForegroundColor Yellow
+    Read-Host
+}
+
+# Main program loop
 # Main program loop
 while ($true) {
     Show-MainMenu
-    $choice = Read-Host "Enter your choice (1-8)"
+    $choice = Read-Host "Enter your choice (1-9)"
     
     switch ($choice) {
         "1" {
@@ -647,6 +1022,8 @@ while ($true) {
                         & $pacPath auth select --name $profileName
                         if ($LASTEXITCODE -eq 0) {
                             Write-ColorOutput Green "✅ Profile activated!"
+                            # Save to config
+                            Update-ConfigValue -Key "LastAuthProfile" -Value $profileName
                         } else {
                             Write-ColorOutput Red "❌ Failed to activate profile"
                         }
@@ -687,7 +1064,8 @@ while ($true) {
             
             # Get all apps
             Write-ColorOutput Green "Fetching all canvas apps..."
-            $appsOutput = & $pacPath canvas list 2>&1 | Out-String
+            Write-Host "Environment: $script:currentEnvironment" -ForegroundColor Gray
+            $appsOutput = & $pacPath canvas list --environment $script:currentEnvironment 2>&1 | Out-String
             
             if ($LASTEXITCODE -ne 0) {
                 Write-ColorOutput Red "❌ Error: Unable to fetch apps"
@@ -695,54 +1073,105 @@ while ($true) {
                 continue
             }
             
-            # Parse apps with improved logic
+            # Parse apps - ULTRA FLEXIBLE PARSING
             $lines = $appsOutput -split "`n"
             $apps = @()
-            $headerFound = $false
+            $skipPatterns = @(
+                '^Connected as',
+                '^Active Display Name',
+                '^Environment',
+                '^Unique Name',
+                '^DEFAULT',
+                '^\s*$',
+                '^-+$',
+                '^Canvas App',
+                '^No canvas apps',
+                '^Press Enter'
+            )
+            
+            Write-Host ""
+            Write-ColorOutput Yellow "Parsing canvas apps list..."
+            Write-Host "Total lines to parse: $($lines.Count)" -ForegroundColor Gray
             
             foreach ($line in $lines) {
-                if ([string]::IsNullOrWhiteSpace($line)) { continue }
-                if ($line -match "Canvas App Name|Environment|^-+$") { 
-                    $headerFound = $true
-                    continue 
+                # Skip empty or header lines
+                $skip = $false
+                foreach ($pattern in $skipPatterns) {
+                    if ($line -match $pattern) {
+                        $skip = $true
+                        break
+                    }
                 }
+                if ($skip) { continue }
                 
-                # Look for GUID pattern
+                # Method 1: Look for GUID pattern (standard format)
                 if ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\s+(.+)") {
                     $apps += @{
                         Id = $matches[1].Trim()
                         Name = $matches[2].Trim()
+                        Source = "GUID format"
                     }
+                    Write-Host "  Found (GUID): $($matches[2].Trim())" -ForegroundColor DarkGray
                     continue
                 }
                 
-                # Parse name-owner-date format
-                if ($headerFound -and $line -match "^(.+?)\s{2,}(.+?)\s+(\d{1,2}/\d{1,2}/\d{4})\s*$") {
-                    $apps += @{
-                        Id = "app_" + ($apps.Count + 1)
-                        Name = $matches[1].Trim()
-                        Owner = $matches[2].Trim()
-                        Date = $matches[3].Trim()
-                    }
-                    continue
-                }
-                
-                # Fallback: any non-empty line after header
-                if ($headerFound -and $line.Length -gt 10 -and -not ($line -match "^Press Enter|^No canvas apps")) {
-                    $possibleName = $line -split '\s{2,}' | Select-Object -First 1
-                    if ($possibleName -and $possibleName.Trim().Length -gt 0) {
+                # Method 2: Lines with dates (your environment's format)
+                # Look for pattern: AppName    Owner    Date
+                if ($line -match "(.+?)\s{2,}(.+?)\s+(\d{1,2}/\d{1,2}/\d{4})") {
+                    $appName = $matches[1].Trim()
+                    $owner = $matches[2].Trim()
+                    $date = $matches[3].Trim()
+                    
+                    # Skip if the app name looks like a header
+                    if ($appName -notmatch "^(Environment|Canvas|Display|Name|Owner|Modified)") {
                         $apps += @{
-                            Id = "app_" + ($apps.Count + 1)
-                            Name = $possibleName.Trim()
+                            Id = "name:$appName"  # Use name as ID since we don't have GUID
+                            Name = $appName
+                            Owner = $owner
+                            Date = $date
+                            Source = "Name-Owner-Date format"
                         }
+                        Write-Host "  Found (Date): $appName" -ForegroundColor DarkGray
+                        continue
+                    }
+                }
+                
+                # Method 3: Just app names (simple list format)
+                # If line has substantial content and doesn't look like a system message
+                $trimmed = $line.Trim()
+                if ($trimmed.Length -gt 3 -and $trimmed -notmatch '^\*|^https://|^[a-f0-9]{8}-') {
+                    # Check if it looks like an app name
+                    if ($trimmed -match '^[\w\s\-\.]+') {
+                        $apps += @{
+                            Id = "name:$trimmed"
+                            Name = $trimmed
+                            Source = "Name-only format"
+                        }
+                        Write-Host "  Found (Name): $trimmed" -ForegroundColor DarkGray
                     }
                 }
             }
             
+            Write-Host ""
+            
             if ($apps.Count -gt 0) {
+                Write-Host ""
+                Write-ColorOutput Green "Found $($apps.Count) app(s) to download"
                 Download-AllApps -Apps $apps
             } else {
                 Write-ColorOutput Yellow "No apps found to download."
+                Write-Host ""
+                Write-ColorOutput Yellow "Debug Info:"
+                Write-Host "Environment: $script:currentEnvironment" -ForegroundColor Gray
+                Write-Host "Raw output lines: $($lines.Count)" -ForegroundColor Gray
+                Write-Host ""
+                Write-Host "Would you like to see the raw output? (Y/N)" -ForegroundColor Yellow
+                $showRaw = Read-Host
+                if ($showRaw -eq 'Y' -or $showRaw -eq 'y') {
+                    Write-Host ""
+                    Write-Host "Raw PAC CLI Output:" -ForegroundColor Cyan
+                    Write-Host $appsOutput
+                }
                 Read-Host "Press Enter to continue"
             }
         }
@@ -755,8 +1184,48 @@ while ($true) {
             Read-Host "Press Enter to continue"
         }
         "8" {
+            # Clear saved settings
+            Clear-Host
+            Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+            Write-ColorOutput Yellow "     🗑️  CLEAR SAVED SETTINGS"
+            Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+            Write-Host ""
+            
+            if (Test-Path $configPath) {
+                Write-ColorOutput Yellow "This will clear all saved settings including:"
+                Write-Host "  - Authentication profiles references"
+                Write-Host "  - Last used environment"
+                Write-Host "  - Download directory preference"
+                Write-Host "  - Tenant and app IDs (if saved)"
+                Write-Host ""
+                Write-ColorOutput Red "Note: This does NOT remove PAC CLI authentication profiles."
+                Write-Host "To remove those, use option 1 → 3 (Delete Authentication Profile)"
+                Write-Host ""
+                
+                $confirm = Read-Host "Are you sure you want to clear saved settings? (Y/N)"
+                
+                if ($confirm -eq 'Y' -or $confirm -eq 'y') {
+                    Remove-Item $configPath -Force
+                    $script:config = @{}
+                    $script:currentEnvironment = ""
+                    $script:downloadDirectory = Join-Path (Get-Location) "downloads"
+                    
+                    Write-Host ""
+                    Write-ColorOutput Green "✅ Saved settings cleared!"
+                } else {
+                    Write-Host ""
+                    Write-ColorOutput Yellow "Settings not cleared."
+                }
+            } else {
+                Write-ColorOutput Yellow "No saved settings found."
+            }
+            
+            Read-Host "Press Enter to continue"
+        }
+        "9" {
             Clear-Host
             Write-ColorOutput Green "Thank you for using Power Platform MSAPP Downloader!"
+            Write-ColorOutput Yellow "Configuration saved for next time."
             Write-ColorOutput Yellow "Goodbye! 👋"
             exit
         }
