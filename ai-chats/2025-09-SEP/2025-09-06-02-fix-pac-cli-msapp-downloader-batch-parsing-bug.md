@@ -88,11 +88,89 @@ Implemented comprehensive debugging and multiple parsing strategies:
 
 ### Console Color Theme Update
 **User Request:** "can you change the background of the script running to the dark blue I'm using in .vscode/settings.json"
+**User Follow-up:** "you made the background color of text in the terminal to blue, but not the right shade. Use this #011f44"
 
-Updated the PowerShell script console colors to match VS Code terminal theme:
-- Background: Changed from 'Black' to 'DarkBlue' (closest to #011f44)
-- Foreground: Changed from 'White' to 'Cyan' (matches #00a2ff)
-- Added Clear-Host to apply background immediately on script start
+Updated the PowerShell script to use exact colors via ANSI escape sequences:
+- Background: RGB(1, 31, 68) for exact #011f44
+- Foreground: RGB(0, 162, 255) for exact #00a2ff  
+- Created Clear-HostWithColor function to maintain colors after clearing
+- Uses ANSI 24-bit color codes for precise color matching
+
+## Critical Config Persistence Bug Fix
+
+### Environment Not Being Cached
+**User:** "when I try #4 to bulk download, it tells me I don't have an environment selected. don't we cache the last selected environment???? wtf! /_u"
+
+### Root Cause (UltraThink Analysis)
+The config persistence was completely broken due to type mismatch:
+1. JSON deserializes to **PSCustomObject**, not Hashtable
+2. `Update-ConfigValue` used bracket notation `$config[$Key]` - only works for Hashtables!
+3. `Save-Configuration` parameter was typed as `[hashtable]` - rejects PSCustomObject
+4. Result: **Silent failures** when saving environment selection
+
+### The Fix
+Updated both functions to handle PSCustomObject properly:
+
+**Update-ConfigValue (lines 77-86):**
+- Detects if config is Hashtable or PSCustomObject
+- Uses appropriate property access method for each type
+- Adds new properties dynamically to PSCustomObject if needed
+
+**Save-Configuration (line 50):**
+- Changed parameter from `[hashtable]$Config` to untyped `$Config`
+- Now accepts both Hashtable and PSCustomObject
+
+**Added Debug Output:**
+- Shows config type, current environment value, and loaded environment
+- Helps diagnose future persistence issues
+
+## Asterisk Environment Bug Fix
+
+### The Mystery Asterisk
+**User:** "look at Screenshot from 2025-09-06 21-21-23.png - why is there a * everytime?? it replaces the real name of a random environment! /_u"
+
+### Root Cause (UltraThink Analysis)
+PAC CLI marks the currently active environment with an asterisk (`*`) in its output:
+```
+DEV - Bissat Hailu
+* DEV - Darren Neese   <-- Active environment
+DEV - Dan Roberts
+```
+
+Our parser was treating `*` as a valid environment name!
+
+### The Fix
+Updated environment parsing in `Select-Environment` function:
+1. **Line 290:** Added check `$trimmed -ne "*"` to skip asterisk markers
+2. **Lines 316-323:** Fixed alternative parsing path to also skip asterisks
+3. **Line 326:** Only add environment if valid name found (not just asterisk)
+
+Now the asterisk is properly filtered out and won't appear as environment #9.
+
+## Default Environment Selection
+
+### Feature Request
+**User:** "ok! can we mark one as the default (the one we chose last)... and if we just hit enter, it uses that to goes"
+
+### Implementation
+Added smart default environment selection:
+
+1. **Environment List Display:**
+   - Shows last selected environment in GREEN with `[DEFAULT]` marker
+   - Displays prompt: "⭐ Press Enter to use default: [env name]"
+
+2. **Enter Key Handling:**
+   - Empty input (just Enter) selects the default environment
+   - Shows confirmation: "Using default environment: [name]"
+
+3. **Main Menu Enhancement:**
+   - Shows current default next to menu option
+   - Example: "2. 🌍 Select Environment (Default: DEV - Darren Neese)"
+
+4. **Persistence:**
+   - Saves selected environment to config
+   - Remembers across sessions
+   - Matches by ID, Name, or UniqueName
 
 ## Code Examples
 

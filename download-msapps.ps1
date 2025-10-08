@@ -8,10 +8,28 @@ $pacPath = "$HOME/bin/pac/tools/pac"
 # Configuration file path
 $configPath = Join-Path $PSScriptRoot "msapp-downloader-config.json"
 
-# Colors for better visibility - matching VS Code terminal theme
-$Host.UI.RawUI.BackgroundColor = 'DarkBlue'  # Closest to #011f44 from VS Code settings
-$Host.UI.RawUI.ForegroundColor = 'Cyan'      # Matches #00a2ff from VS Code settings
-Clear-Host  # Apply the new background color
+# Define color functions first
+function Set-CustomColors {
+    $ESC = [char]27
+    Write-Host "$ESC[48;2;1;31;68m$ESC[38;2;0;162;255m" -NoNewline
+}
+
+function Clear-HostWithColor {
+    Clear-Host
+    Set-CustomColors
+}
+
+# PowerShell doesn't support hex colors directly, but we can use escape sequences
+# Set custom background color using ANSI escape codes for exact #011f44
+$ESC = [char]27
+Write-Host "$ESC[48;2;1;31;68m" -NoNewline  # RGB for #011f44
+Write-Host "$ESC[38;2;0;162;255m" -NoNewline  # RGB for #00a2ff foreground
+
+# Also set the console colors to closest matches
+$Host.UI.RawUI.BackgroundColor = 'Black'  # Will be overridden by ANSI
+$Host.UI.RawUI.ForegroundColor = 'Cyan'   # Will be overridden by ANSI
+Clear-HostWithColor  # Apply the new background color
+
 
 # Configuration functions
 function Load-Configuration {
@@ -29,16 +47,16 @@ function Load-Configuration {
 
 function Save-Configuration {
     param(
-        [hashtable]$Config
+        $Config  # Accept any type (Hashtable or PSCustomObject)
     )
     
     try {
-        # Ensure the config is a proper hashtable
+        # Ensure we have something to save
         if ($null -eq $Config) {
             $Config = @{}
         }
         
-        # Convert hashtable to JSON and save
+        # Convert to JSON and save (works with both Hashtable and PSCustomObject)
         $jsonContent = $Config | ConvertTo-Json -Depth 3
         $jsonContent | Set-Content $configPath -Force
         
@@ -56,7 +74,18 @@ function Update-ConfigValue {
         $Value
     )
     
-    $script:config[$Key] = $Value
+    # Handle both Hashtable and PSCustomObject
+    if ($script:config -is [hashtable]) {
+        $script:config[$Key] = $Value
+    } else {
+        # It's a PSCustomObject from JSON - need to add/update property
+        if ($script:config.PSObject.Properties.Name -contains $Key) {
+            $script:config.$Key = $Value
+        } else {
+            $script:config | Add-Member -NotePropertyName $Key -NotePropertyValue $Value -Force
+        }
+    }
+    
     Save-Configuration -Config $script:config
 }
 
@@ -68,7 +97,7 @@ function Write-ColorOutput($ForegroundColor, $Text) {
 }
 
 function Show-MainMenu {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     🚀 POWER PLATFORM MSAPP DOWNLOADER"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -85,7 +114,15 @@ function Show-MainMenu {
     Write-Host ""
     Write-ColorOutput Green "MAIN MENU:"
     Write-Host "  1. 🔐 Manage Authentication"
-    Write-Host "  2. 🌍 Select Environment"
+    
+    # Show environment selection with default indicator
+    if ($script:config.LastEnvironment) {
+        Write-Host "  2. 🌍 Select Environment" -NoNewline
+        Write-Host " (Default: $($script:config.LastEnvironment))" -ForegroundColor DarkGray
+    } else {
+        Write-Host "  2. 🌍 Select Environment"
+    }
+    
     Write-Host "  3. 📱 Download Canvas Apps"
     Write-Host "  4. 📦 Batch Download All Apps"
     Write-Host "  5. 📁 Configure Download Directory"
@@ -98,7 +135,7 @@ function Show-MainMenu {
 }
 
 function Show-AuthMenu {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     🔐 AUTHENTICATION MANAGEMENT"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -120,7 +157,7 @@ function Show-AuthMenu {
 }
 
 function Create-NewAuth {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     ➕ CREATE NEW AUTHENTICATION"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -210,7 +247,7 @@ function Create-NewAuth {
 }
 
 function Select-Environment {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     🌍 SELECT ENVIRONMENT"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -254,10 +291,11 @@ function Select-Environment {
             # Try to extract display name (usually first part of the line)
             $parts = $line -split '\s{2,}'
             if ($parts.Count -gt 0) {
-                # First non-empty part that's not a URL or GUID
+                # First non-empty part that's not a URL, GUID, or asterisk marker
                 foreach ($part in $parts) {
                     $trimmed = $part.Trim()
-                    if ($trimmed -and -not ($trimmed -match "^https://" -or $trimmed -match "^[a-f0-9]{8}-")) {
+                    # Skip asterisk (active marker), URLs, and GUIDs
+                    if ($trimmed -and $trimmed -ne "*" -and -not ($trimmed -match "^https://" -or $trimmed -match "^[a-f0-9]{8}-")) {
                         $envName = $trimmed
                         break
                     }
@@ -281,14 +319,26 @@ function Select-Environment {
         elseif ($line -match "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})") {
             $envId = $matches[1]
             $parts = $line -split '\s{2,}'
-            $envName = if ($parts.Count -gt 0) { $parts[0].Trim() } else { "Environment" }
+            $envName = ""
             
-            $environments += @{
-                Name = $envName
-                Id = $envId
-                Url = ""
-                UniqueName = ""
-                FullLine = $line.Trim()
+            # Find first valid name part (not asterisk, not GUID)
+            foreach ($part in $parts) {
+                $trimmed = $part.Trim()
+                if ($trimmed -and $trimmed -ne "*" -and -not ($trimmed -match "^[a-f0-9]{8}-")) {
+                    $envName = $trimmed
+                    break
+                }
+            }
+            
+            # Only add if we found a valid name
+            if ($envName) {
+                $environments += @{
+                    Name = $envName
+                    Id = $envId
+                    Url = ""
+                    UniqueName = ""
+                    FullLine = $line.Trim()
+                }
             }
         }
     }
@@ -306,6 +356,21 @@ function Select-Environment {
         Write-ColorOutput Green "Available Environments:"
         Write-Host ""
         
+        # Find the default environment (last selected)
+        $defaultIndex = -1
+        if ($script:config.LastEnvironment) {
+            for ($i = 0; $i -lt $environments.Count; $i++) {
+                $env = $environments[$i]
+                # Check if this environment matches our saved one
+                if ($env.Id -eq $script:config.LastEnvironment -or 
+                    $env.Name -eq $script:config.LastEnvironment -or
+                    $env.UniqueName -eq $script:config.LastEnvironment) {
+                    $defaultIndex = $i
+                    break
+                }
+            }
+        }
+        
         # Display in columns for better use of space
         $columnWidth = 40
         for ($i = 0; $i -lt $environments.Count; $i++) {
@@ -320,7 +385,14 @@ function Select-Environment {
             
             # Format the line with number and name
             Write-Host $number -NoNewline -ForegroundColor Yellow
-            Write-Host " $displayName" -ForegroundColor Cyan
+            
+            # Mark default environment
+            if ($i -eq $defaultIndex) {
+                Write-Host " $displayName" -NoNewline -ForegroundColor Green
+                Write-Host " [DEFAULT]" -ForegroundColor Magenta
+            } else {
+                Write-Host " $displayName" -ForegroundColor Cyan
+            }
         }
         
         Write-Host ""
@@ -329,9 +401,13 @@ function Select-Environment {
         $currentEnvLine = $lines | Where-Object { $_ -match "\*" -or $_ -match "Active" -or $_ -match "Current" }
         if ($currentEnvLine) {
             Write-ColorOutput Blue "📍 Currently selected environment is marked with * or Active"
-            Write-Host ""
         }
         
+        if ($defaultIndex -ge 0) {
+            Write-ColorOutput Magenta "⭐ Press Enter to use default: $($environments[$defaultIndex].Name)"
+        }
+        
+        Write-Host ""
         Write-ColorOutput Yellow "Select an environment by number (1-$($environments.Count)):"
         Write-Host "Or enter 'D' to show detailed info for all environments"
         Write-Host "Or enter 'M' to manually input an Environment ID/URL"
@@ -339,6 +415,12 @@ function Select-Environment {
         Write-Host ""
         
         $selection = Read-Host "Your choice"
+        
+        # Handle empty input (Enter key) - use default
+        if ([string]::IsNullOrWhiteSpace($selection) -and $defaultIndex -ge 0) {
+            $selection = ($defaultIndex + 1).ToString()
+            Write-ColorOutput Green "Using default environment: $($environments[$defaultIndex].Name)"
+        }
         
         if ($selection -eq 'C' -or $selection -eq 'c') {
             Write-ColorOutput Yellow "Environment selection cancelled."
@@ -418,7 +500,7 @@ function Select-Environment {
 }
 
 function Download-CanvasApps {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     📱 DOWNLOAD CANVAS APPS"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -770,7 +852,7 @@ function Extract-AllMsApps {
 }
 
 function Configure-DownloadDirectory {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     📁 CONFIGURE DOWNLOAD DIRECTORY"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -805,7 +887,7 @@ function Configure-DownloadDirectory {
 }
 
 function Show-CurrentSettings {
-    Clear-Host
+    Clear-HostWithColor
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     ℹ️  CURRENT SETTINGS"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -889,12 +971,18 @@ function Show-CurrentSettings {
 $script:config = Load-Configuration
 
 # Initialize config as hashtable if it's empty
-if (-not $script:config -or $script:config.GetType().Name -ne "Hashtable") {
+if (-not $script:config) {
     $script:config = @{}
 }
 
 # Initialize variables with saved values or defaults
-$script:currentEnvironment = if ($script:config.LastEnvironment) { $script:config.LastEnvironment } else { "" }
+# Handle both Hashtable and PSCustomObject from JSON
+if ($script:config -is [hashtable]) {
+    $script:currentEnvironment = if ($script:config.LastEnvironment) { $script:config.LastEnvironment } else { "" }
+} else {
+    # It's a PSCustomObject from JSON
+    $script:currentEnvironment = if ($script:config.LastEnvironment) { $script:config.LastEnvironment } else { "" }
+}
 $script:downloadDirectory = if ($script:config.DownloadDirectory) { $script:config.DownloadDirectory } else { Join-Path (Get-Location) "downloads" }
 
 # Save initial config if it doesn't exist
@@ -915,6 +1003,12 @@ if ($script:config -and ($script:config.LastAuthProfile -or $script:config.LastE
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
     Write-ColorOutput Yellow "     🔄 LOADING SAVED CONFIGURATION"
     Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
+    Write-Host ""
+    
+    # Debug: Show what we loaded
+    Write-Host "DEBUG: Config type: $($script:config.GetType().Name)" -ForegroundColor DarkGray
+    Write-Host "DEBUG: currentEnvironment value: '$script:currentEnvironment'" -ForegroundColor DarkGray
+    Write-Host "DEBUG: config.LastEnvironment: '$($script:config.LastEnvironment)'" -ForegroundColor DarkGray
     Write-Host ""
     
     if ($script:config.LastAuthProfile) {
@@ -1014,7 +1108,7 @@ while ($true) {
         "2" { Select-Environment }
         "3" { Download-CanvasApps }
         "4" {
-            Clear-Host
+            Clear-HostWithColor
             Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
             Write-ColorOutput Yellow "     📦 BATCH DOWNLOAD ALL APPS"
             Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -1161,14 +1255,14 @@ while ($true) {
         "5" { Configure-DownloadDirectory }
         "6" { Show-CurrentSettings }
         "7" {
-            Clear-Host
+            Clear-HostWithColor
             Write-ColorOutput Cyan "Refreshing environment list..."
             & $pacPath env list
             Read-Host "Press Enter to continue"
         }
         "8" {
             # Clear saved settings
-            Clear-Host
+            Clear-HostWithColor
             Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
             Write-ColorOutput Yellow "     🗑️  CLEAR SAVED SETTINGS"
             Write-ColorOutput Cyan "════════════════════════════════════════════════════════════════"
@@ -1206,7 +1300,7 @@ while ($true) {
             Read-Host "Press Enter to continue"
         }
         "9" {
-            Clear-Host
+            Clear-HostWithColor
             Write-ColorOutput Green "Thank you for using Power Platform MSAPP Downloader!"
             Write-ColorOutput Yellow "Configuration saved for next time."
             Write-ColorOutput Yellow "Goodbye! 👋"
